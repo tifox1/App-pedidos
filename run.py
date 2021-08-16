@@ -41,9 +41,9 @@ def consulta_cabecera(id):
         db_odoo, uid, password,
         'sale.order',
         'search_read',  # Buscar y leer
-        [[['id_cabecera','=', id]]],  # Condición
+        [[['id','=', id]]],  # Condición
         {
-            'fields': ['name', 'pricelist_id', 'partner_id', 'user_id', 'datetime'], 
+            'fields': ['name', 'pricelist_id', 'partner_id'], 
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -65,26 +65,26 @@ def consulta_linea(id):
     return resultado
 
 def create_linea(id_cabecera, id_producto, cantidad, precio_unitario):
-    id = prox.execute_kw(db, 
+    id = prox.execute_kw(db_odoo, 
         uid, 
         password, 
         'sale.order.line', 
         'create', [{
-            'order_id': id_cabecera,
-            'product_id': id_producto,
+            'order_id': int(id_cabecera),
+            'product_id': int(id_producto),
             'product_uom_qty': cantidad,
             'price_unit': precio_unitario 
         }]
     )
 
 def create_cabecera(id_cliente, id_tarifa):
-    id = prox.execute_kw(db, 
+    id = prox.execute_kw(db_odoo, 
         uid, 
         password, 
         'sale.order', 
         'create', [{
-            'partner_id': id_cliente,
-            'pricelist_id': id_tarifa
+            'partner_id': int(id_cliente),
+            'pricelist_id': int(id_tarifa)
         }]
     )
     return id
@@ -143,37 +143,48 @@ def producto_listado():
 def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
+        # print(datos['formulario'])
+
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario'),
-            datos['tarifa'],
+            datos['tarifa']
         )
-        for i in datos['formulario']:
+        # print(id_cabecera)
+
+        for i in datos['formulario'][0]:
+            pass
             create_linea(
                 id_cabecera,
                 i.get('id_producto'),
                 i.get('cantidad'),
                 i.get('precio_unitario')
             )
-        print(datos)
+            # print(i)
+        # print(consulta_cabecera(id_cabecera))
 
         for index in consulta_cabecera(id_cabecera):
-            for query in index:
+            for query in index: 
+                # print(query)
                 model_cabecera = PedidosCabecera(
                     nombre= query.get('name'),
                     id_usuario= query.get('partner_id'),
-                    tarifa= query.get('pricelist_id'),
-                    fecha= query.get('datetime')
+                    tarifa= query.get('pricelist_id'),   
+                    
                 ) 
+                db.session.add(model_cabecera)
+                db.session.commit()
 
         for index in consulta_linea(id_cabecera):
             for query in index:
                 model_lineas = PedidosLineas(
-                    cabecera_id= query.get('')
-                    cantidad= query.get('product_uom_qty')
+                    cabecera_id= query.get('order_id'),
+                    cantidad= query.get('product_uom_qty'),
+                    id_producto= query.get('product_id')
                 )
+                db.session.add(model_lineas)
+                db.session.commit()
 
-        db.session.add(model_lineas, model_cabecera )
-        db.session.commit()
+
         
         pedidos = PedidosLineas.query.filter_by(usuario_id=int(datos['usuario_id']))
         return {
@@ -185,7 +196,7 @@ def pedidos_create():
             } for p in pedidos]
         }, 200
 
-    return ''  
+    return 502
 
 
 # @app.route('/api/pedidos_delete', methods=['GET', 'DELETE'])
