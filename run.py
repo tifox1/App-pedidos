@@ -1,5 +1,6 @@
 from flask import Flask, json, jsonify
 from flask_sqlalchemy import model
+from sqlalchemy.orm import query
 from config import DevelopmentConfig
 from flask_cors import CORS
 from flask import request
@@ -43,7 +44,7 @@ def consulta_cabecera(id):
         'search_read',  # Buscar y leer
         [[['id','=', id]]],  # Condición
         {
-            'fields': ['name', 'pricelist_id', 'partner_id'], 
+            'fields': ['name', 'pricelist_id', 'partner_id', 'id'], 
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -64,16 +65,23 @@ def consulta_linea(id):
     )
     return resultado
 
-def create_linea(id_cabecera, id_producto, cantidad, precio_unitario):
+def create_linea(id, id_producto, cantidad):
+    ''' 
+    revisar impuestos
+    '''
     id = prox.execute_kw(db_odoo, 
         uid, 
         password, 
         'sale.order.line', 
         'create', [{
-            'order_id': int(id_cabecera),
-            'product_id': int(id_producto),
+            'name': 'dfasdfasd',
+            'order_id': id,
+            'product_id': id_producto,
             'product_uom_qty': cantidad,
-            'price_unit': precio_unitario 
+            'price_unit': 1,
+            'tax_id':  [(6,0,[2])],
+            #'customer_lead': 223,
+            'product_uom': 1
         }]
     )
 
@@ -104,12 +112,19 @@ contenido_odoo = prox.execute_kw(
 )
 
 
-@app.route('/api/usuario_create', methods=['GET', 'POST'])
-def usuario():
-    instancia = Usuario(nombre='Jorge', contrasenia='123')
+@app.route('/api/usuario_create/<nombre>/<contrasenia>', methods=['GET', 'POST'])
+def usuario(nombre, contrasenia):
+    # datos= json.loads(request.data)
 
-    db.session.add(instancia)
-    db.session.commit()
+    query_datos = Usuario.query.filter_by(nombre = nombre, contrasenia = contrasenia).all()
+    if len(query_datos) != 0:
+        print('El usuario existe')
+    else:
+        print('El usuario es inexistente')
+    # instancia = Usuario(nombre= datos.get('usuario'), contrasenia='123')
+    # db.session.add(instancia)
+    # db.session.commit()
+    return ''
 
 
 @app.route('/api/producto_listado', methods=['POST'])
@@ -144,59 +159,44 @@ def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
         # print(datos['formulario'])
-
+        #guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario'),
             datos['tarifa']
         )
-        # print(id_cabecera)
-
-        for i in datos['formulario'][0]:
-            pass
+        # print(datos['formulario'][0])
+        
+        for i in datos['formulario']:
             create_linea(
                 id_cabecera,
                 i.get('id_producto'),
-                i.get('cantidad'),
-                i.get('precio_unitario')
+                i.get('cantidad')
+
             )
-            # print(i)
-        # print(consulta_cabecera(id_cabecera))
 
+        #guardar datos a la base de datos de flask
+        print(id_cabecera)
         for index in consulta_cabecera(id_cabecera):
-            for query in index: 
-                # print(query)
-                model_cabecera = PedidosCabecera(
-                    nombre= query.get('name'),
-                    id_usuario= query.get('partner_id'),
-                    tarifa= query.get('pricelist_id'),   
-                    
-                ) 
-                db.session.add(model_cabecera)
-                db.session.commit()
-
+            model_cabecera = PedidosCabecera(
+                id= id_cabecera,
+                nombre= index.get('name'),
+                id_usuario= index.get('partner_id')[0],
+                tarifa= index.get('pricelist_id')[0],       
+            ) 
+            db.session.add(model_cabecera)
+            db.session.commit() 
+        # print(consulta_linea(id_cabecera))
         for index in consulta_linea(id_cabecera):
-            for query in index:
-                model_lineas = PedidosLineas(
-                    cabecera_id= query.get('order_id'),
-                    cantidad= query.get('product_uom_qty'),
-                    id_producto= query.get('product_id')
-                )
-                db.session.add(model_lineas)
-                db.session.commit()
+            model_lineas = PedidosLineas(
+                cabecera_id= index.get('order_id')[0],
+                cantidad= index.get('product_uom_qty'),
+                id_producto= index.get('product_id')[0]
+            )
+            db.session.add(model_lineas)
+            db.session.commit()
+        return  ''
 
-
-        
-        pedidos = PedidosLineas.query.filter_by(usuario_id=int(datos['usuario_id']))
-        return {
-            'resultado':[{
-                'id': p.id,
-                'cantidad': p.cantidad,
-                'producto': p.product,
-                'fecha': str(p.fecha)
-            } for p in pedidos]
-        }, 200
-
-    return 502
+    return '', 502
 
 
 # @app.route('/api/pedidos_delete', methods=['GET', 'DELETE'])
