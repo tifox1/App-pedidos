@@ -7,10 +7,6 @@ from flask import request
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5cf1980097fb42103f275ae6b36e5e85bf69e7e0
 from xmlrpc import client
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas
