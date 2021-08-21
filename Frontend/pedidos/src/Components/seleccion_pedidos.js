@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useFormik } from 'formik'
 import * as yup from 'yup'
-import Cookies from 'universal-cookie'
 import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
@@ -20,12 +19,10 @@ function Alert(props) {
 }
 
 const Seleccion = () => {
-    const cookies = new Cookies()
     const [message, setMessage] = useState(false)
     const [productos, setProductos] = useState([])
     const [resultado, setResultado] = useState([])
     const [valido, setValido] = useState(false)
-    const [totalProds, setTotalProds] = useState(0)
 
     const handleClick = (event) => {
         setMessage()
@@ -76,7 +73,6 @@ const Seleccion = () => {
 
             }
         )
-        // console.log(productos)
     }, [valido])
 
 
@@ -101,7 +97,6 @@ const Seleccion = () => {
         validationSchema: yup.object({
             cantidad: yup.number().required("Este campo es obligatorio"),
             producto: yup.string().required("Este campo es obligatorio"),
-            // tarifa: yup.string().required("Este campo es obligatorio")
         })
     })
     const handleDelete = (deleteItem) => {
@@ -114,8 +109,8 @@ const Seleccion = () => {
             <NavBar />
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
-                    <Grid container spacing={2}>
-                        <Grid item>
+                    <Grid container alignItems="stretch" spacing={2}>
+                        <Grid item xs={12}>
                             <Button
                                 color="primary"
                                 variant="contained"
@@ -154,9 +149,6 @@ const Seleccion = () => {
                                             }}
                                             onChange={(event, newValue) => {
                                                 formik.setFieldValue('id_producto', newValue.id)
-                                                // console.log(newValue)
-                                                // formik.setFieldValue('producto', newValue)
-                                                // formik.setFieldValue('id_producto', newValue.id)
                                             }}
                                         />
                                     </Grid>
@@ -177,15 +169,27 @@ const Seleccion = () => {
                             <Table>
                                 <TableHead>
                                     <TableCell>Descripción</TableCell>
-                                    <TableCell align="right">Cantidad</TableCell>
-                                    <TableCell align="right">Precio Unitario</TableCell>
-                                    <TableCell align="right">Total</TableCell>
+                                    <TableCell align="right">
+                                        Cantidad
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        Precio Unitario
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        Total
+                                    </TableCell>
                                     <TableCell></TableCell>
                                 </TableHead>
                                 <TableBody>
                                     {resultado.map(res => {
                                         return (
-                                            <LineaPedido key={res.product_id} item={res} handleDelete={ () => handleDelete(res)}/>
+                                            <LineaPedido
+                                                key={res.product_id}
+                                                item={res}
+                                                handleDelete={
+                                                    () => handleDelete(res)
+                                                }
+                                            />
                                         )
                                     }
                                     )}
