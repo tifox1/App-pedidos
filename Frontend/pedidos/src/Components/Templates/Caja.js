@@ -4,11 +4,11 @@ import React from 'react'
 const Caja = (props) => {
     return(<>
         <Grid item
-              xs={12} component={Box} padding={1}>
+              xs={props.xs ? props.xs : 12} component={Box} {...props}>
             <Zoom in={true}>
                 <Paper variant="outlined">
                     <Grid container spacing={1} component={Box} padding={2}>
-                        <Grid container xs={12} direction="row" alignItems="center">
+                        <Grid container direction="row" alignItems="center">
                             {(() => {
                                 if (props.title) {
                                     return(<>
