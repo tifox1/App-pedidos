@@ -6,11 +6,9 @@ from flask_cors import CORS
 from flask import request
 from flask_script import Manager, Server
 from flask_migrate import Migrate, MigrateCommand
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 5cf1980097fb42103f275ae6b36e5e85bf69e7e0
 from xmlrpc import client
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas
@@ -23,6 +21,7 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 migrate = Migrate(app, db)
 manager = Manager(app)
+admin = Admin(app)
 
 manager.add_command('db', MigrateCommand)
 
@@ -238,7 +237,9 @@ def pedidos_create():
 
 #     return diccionario 
 
-
+admin.add_view(ModelView(Usuario, db.session))
+admin.add_view(ModelView(PedidosCabecera, db.session))
+admin.add_view(ModelView(PedidosLineas, db.session))
 if __name__ == '__main__':
     db.init_app(app)
     manager.run()
