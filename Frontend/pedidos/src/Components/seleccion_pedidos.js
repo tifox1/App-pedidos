@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { useFormik } from 'formik'
+import Cookies from 'universal-cookie';
 import * as yup from 'yup'
 import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
 import TextField from '@material-ui/core/TextField'
-import { Button, Table, TableBody, TableCell, TableHead} from '@material-ui/core'
+import { Button, Table, TableBody, TableCell, TableHead } from '@material-ui/core'
 import Autocompletado from './Templates/Autocompletado'
 import { FormHelperText } from '@material-ui/core'
 import NavBar from './AppBar'
@@ -13,12 +14,16 @@ import Caja from './Templates/Caja'
 import CheckIcon from '@material-ui/icons/Check'
 import AddIcon from '@material-ui/icons/Add'
 import LineaPedido from './LineasPedido'
+import { useHistory } from "react-router";
+import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
 }
 
 const Seleccion = () => {
+    const history = useHistory()
+    const cookies = new Cookies()
     const [message, setMessage] = useState(false)
     const [productos, setProductos] = useState([])
     const [resultado, setResultado] = useState([])
@@ -33,8 +38,8 @@ const Seleccion = () => {
             },
             body: JSON.stringify({
                 tarifa: 1,
-                usuario:[{id_usuario: 2}], //lugar donde ira la id del cliente
-                formulario:resultado,
+                usuario: [{ id_usuario: cookies.get('usuario') }], //lugar donde ira la id del cliente
+                formulario: resultado,
             })
         }).then(
             response => { return response.json() }
@@ -56,13 +61,16 @@ const Seleccion = () => {
 
 
     useEffect(() => {
+        if(!cookies.get('usuario')){
+            history.push('/login')
+        }
         fetch('/api/producto_listado', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-
+                odoo_field: cookies.get('usuario').usuario.odoo_field
             })
         }).then(
             response => { return response.json() }
@@ -73,7 +81,7 @@ const Seleccion = () => {
 
             }
         )
-    }, [valido])
+    }, [ ])
 
 
     const formik = useFormik({
@@ -88,7 +96,7 @@ const Seleccion = () => {
             setResultado([...resultado, value])
             if (resultado.length + 1 > 0) {
                 setValido(true)
-            }else{
+            } else {
                 setValido(false)
             }
             resetForm()
@@ -101,9 +109,9 @@ const Seleccion = () => {
     })
     const handleDelete = (deleteItem) => {
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
-        console.log(newResultado)
         setResultado(newResultado)
     }
+
     return (
         <>
             <NavBar />

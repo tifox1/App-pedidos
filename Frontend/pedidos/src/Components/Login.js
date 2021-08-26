@@ -1,5 +1,5 @@
 import { useHistory } from "react-router";
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cookies from 'universal-cookie';
@@ -18,6 +18,8 @@ import { Collapse } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert'
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import { Redirect } from 'react-router';
+
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -45,6 +47,13 @@ const Login = (props) => {
     const [severity] = useState('error')
     const [backdrop, setBackdrop] = useState(false)
 
+    useEffect(
+        ()=>{
+            if(cookies.get('usuario')){
+                history.push('/')
+            }
+        },[])
+
     const handleClose = (e, reason) => {
         if (reason === 'clickaway') {
             return
@@ -59,7 +68,7 @@ const Login = (props) => {
         },
         onSubmit: value => {
             setBackdrop(true)
-            fetch('/api/usuariovalidacion/', {
+            fetch('/api/usuario_validacion/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -70,9 +79,10 @@ const Login = (props) => {
                 })
             }).then(response => {
                 setBackdrop(false)
+                // console.log(response)
                 if (response.ok){
                     return response.json()
-                } else if (response.status === 405) {
+                } else if (response.status === 400) {
                     setMessage('Contraseña o usuario incorrectos')
                     setOpen(true)
                     return false
@@ -81,6 +91,7 @@ const Login = (props) => {
                     return false
                 }
             }).then(data => {
+                console.log(data)
                 if (data) {
                     cookies.set('usuario', data, {path: '/'})
                     history.push('/')
@@ -98,6 +109,7 @@ const Login = (props) => {
             contrasenia: Yup.string().required('Ingrese contraseña')
         })
     })
+
     return (<>
         <AppBar className={classes.root} position="static">
             <Toolbar>
