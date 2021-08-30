@@ -124,17 +124,6 @@ def create_cabecera(id_cliente, id_tarifa):
     )
     return id
 
-# contenido_odoo = prox.execute_kw(
-#     db_odoo, uid, password,
-#     'product.template',
-#     'search_read',  # Buscar y leer
-#     [[]],  # Condición
-#     {
-#         'fields': ['name', 'id'],
-#         'order': 'name',
-#         'limit': 5
-#     }  # Campos que va a traer
-# )
 def producto(campo):
     contenido_odoo = prox.execute_kw(
         db_odoo, uid, password,
@@ -148,20 +137,46 @@ def producto(campo):
     )
     return contenido_odoo
 
+def consulta_tarifa(user_id):
+    contenido_odoo = prox.execute_kw(
+        db_odoo, uid, password,
+        'product.pricelist',
+        'search_read',  # Buscar y leer
+        [[['partner_id', '=', user_id]]],  # Condición
+        {
+            'fields': ['name', 'id'],
+            'order': 'name',
+        }  # Campos que va a traer
+    )
+    return contenido_odoo 
+
+def consulta_precio(product_id, tarifa_id):
+    contenido_odoo = prox.execute_kw(
+        db_odoo, uid, password,
+        'product.pricelist.item',
+        'search_read',  # Buscar y leer
+        [[['product_tmpl_id', '=', product_id], ['pricelist_id', '=', tarifa_id]]],  # Condición
+        {
+            'fields': ['fixed_price'],
+            'order': 'name',
+        }  # Campos que va a traer
+    )
+    return contenido_odoo
+
+
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
 
 
 @app.route('/api/usuario_validacion/', methods=['GET', 'POST'])
 def usuario_validacion():
     datos = json.loads(request.data)
-
     query_datos = Usuario.query.filter_by(
         nombre=str(datos.get('usuario')),
         contrasenia=str(datos.get('contrasenia')),
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
         return {
-            'usuario': {
+            'usuario': { 
                 'id': query_datos[0].partner_id,
                 'name': query_datos[0].nombre,
                 'odoo_field':query_datos[0].campo_odoo
@@ -182,6 +197,29 @@ def producto_listado():
         lista.append({'title': i.get('name'), 'id': i.get('id')})
         # print(lista)
     return jsonify({'resultado': lista})
+
+@app.route('/api/tarifa_listado', methods=['POST'])
+def tarifa_listado():
+    datos = json.loads(request.data)
+    lista = list()
+    for i in consulta_tarifa(datos['user_id']):
+        lista.append({'title': i.get('name'), 'id': i.get('id')})
+    return jsonify({'resultado': lista})
+
+
+@app.route('/api/producto_precio', methods=['POST'])
+def producto_precio():
+    if request.method == 'POST':
+        datos = json.loads(request.data)
+        print(datos)
+        query = consulta_precio(
+            datos['product_id'],
+            datos['tarifa_id']
+        )
+        return{'price': query[0].get('fixed_price')}
+
+
+
 
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------

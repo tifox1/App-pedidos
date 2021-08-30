@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useFormik } from 'formik'
 import Cookies from 'universal-cookie';
 import * as yup from 'yup'
@@ -28,9 +28,11 @@ const Seleccion = () => {
     const [productos, setProductos] = useState([])
     const [resultado, setResultado] = useState([])
     const [valido, setValido] = useState(false)
+    const tarifa = useRef([])
+    const result = useRef([])
 
     const handleClick = (event) => {
-        setMessage()
+        setMessage(true)
         fetch('/api/pedidos_create', {
             method: 'POST',
             headers: {
@@ -45,9 +47,7 @@ const Seleccion = () => {
             response => { return response.json() }
         ).then(
             data => {
-                console.log(data.resultado)
                 setProductos(data.resultado)
-
             }
         )
     }
@@ -76,12 +76,27 @@ const Seleccion = () => {
             response => { return response.json() }
         ).then(
             data => {
-                console.log(data.resultado)
                 setProductos(data.resultado)
 
             }
         )
-    }, [ ])
+        //-----------------------------------------------------
+        fetch('/api/tarifa_listado', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                user_id: cookies.get('usuario').usuario.id
+            })
+        }).then(
+            response => { return response.json() }
+        ).then(
+            data => {
+                tarifa.current = data['resultado']
+            }
+        )
+    }, [])
 
 
     const formik = useFormik({
@@ -94,13 +109,32 @@ const Seleccion = () => {
             let d = new Date()
             value.date = d.toUTCString()
             setResultado([...resultado, value])
+            result.current.splice(result.current.value, 0, value)
+            
             if (resultado.length + 1 > 0) {
                 setValido(true)
             } else {
                 setValido(false)
             }
             resetForm()
-
+            console.log(result.current)
+            fetch('/api/producto_precio', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    product_id: result.current[result.current.length - 1].id_producto,
+                    tarifa_id: 26,
+                })
+            }).then(
+                response => { return response.json() }
+            ).then(
+                data => {
+                    console.log(data)
+                    // setTarifa(data.resultado)
+                }
+            )
         },
         validationSchema: yup.object({
             cantidad: yup.number().required("Este campo es obligatorio"),
@@ -110,7 +144,8 @@ const Seleccion = () => {
     const handleDelete = (deleteItem) => {
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
-    }
+        // console.log(resultado)
+     }
 
     return (
         <>
@@ -118,6 +153,22 @@ const Seleccion = () => {
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
                     <Grid container alignItems="stretch" spacing={2}>
+                        <Grid item xs={3}>
+                            <Autocompletado
+                                error={formik.errors.producto}
+                                name="Tarifa"
+                                options={tarifa}
+                                title="Tarifa"
+                                inputValue={formik.values.producto}
+                                disableClearable
+                                onInputChange={(event, newValue) => {
+                                    formik.setFieldValue('producto', newValue)
+                                }}
+                                onChange={(event, newValue) => {
+                                    formik.setFieldValue('id_producto', newValue.id)
+                                }}
+                            />
+                        </Grid>
                         <Grid item xs={12}>
                             <Button
                                 color="primary"
