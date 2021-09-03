@@ -146,9 +146,11 @@ const Seleccion = () => {
                                             disableClearable
                                             onInputChange={(event, newValue) => {
                                                 formik.setFieldValue('producto', newValue)
+                                                console.log(newValue)
                                             }}
                                             onChange={(event, newValue) => {
                                                 formik.setFieldValue('id_producto', newValue.id)
+                                                console.log(newValue)
                                             }}
                                         />
                                     </Grid>
