@@ -1,3 +1,4 @@
+from configparser import ConfigParser
 from flask import Flask, json, jsonify
 from flask.helpers import url_for
 from flask_sqlalchemy import model
@@ -16,6 +17,8 @@ from xmlrpc import client
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
 
+config = ConfigParser()
+config.read('config.ini')
 app = Flask(__name__)
 app.config.from_object(DevelopmentConfig)
 # app.config.from_pyfile('config.cfg')
@@ -36,19 +39,11 @@ def load_user(user_id):
     return User.query.get(user_id)
 
 
-# Credenciales servidor
-#   TODO: poner las variables en un archivo de configuración aparte (archivo .ini)
-srv = '192.168.100.47'  # '192.168.0.29' Ruta del servidor
-port = '8788'  # Puerto servidor
-db_odoo = 'polos2007'  # Nombre base de datos odoo
-user = 'admin'
-password = 'serverpolosadmin'
-
 # XMLRPC
-common = client.ServerProxy('http://%s:%s/xmlrpc/2/common' % (srv, port))
+common = client.ServerProxy('http://%s:%s/xmlrpc/2/common' % (config['odoo']['srv'], int(config['odoo']['port'])))
 common.version()
-uid = common.authenticate(db_odoo, user, password, {})
-prox = client.ServerProxy('http://%s:%s/xmlrpc/2/object' % (srv, port))
+uid = common.authenticate(config['odoo']['db_odoo'], config['odoo']['user'], config['odoo']['password'], {})
+prox = client.ServerProxy('http://%s:%s/xmlrpc/2/object' % (config['odoo']['srv'], config['odoo']['port']))
 
 login = LoginManager(app)
 
@@ -61,7 +56,7 @@ def load_user(user_id):
 
 def consulta_cabecera(id):
     resultado = prox.execute_kw(
-        db_odoo, uid, password,
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'sale.order',
         'search_read',  # Buscar y leer
         [[['id', '=', id]]],  # Condición
@@ -76,7 +71,7 @@ def consulta_cabecera(id):
 
 def consulta_linea(id):
     resultado = prox.execute_kw(
-        db_odoo, uid, password,
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'sale.order.line',
         'search_read',  # Buscar y leer
         [[['order_id', '=', id]]],  # Condición
@@ -94,9 +89,9 @@ def create_linea(id, id_producto, cantidad):
     revisar impuestos
     '''
     id = prox.execute_kw(
-        db_odoo,
+        config['odoo']['db_odoo'],
         uid,
-        password,
+        config['odoo']['password'],
         'sale.order.line',
         'create', [{
             'name': 'dfasdfasd',
@@ -113,9 +108,9 @@ def create_linea(id, id_producto, cantidad):
 
 def create_cabecera(id_cliente, id_tarifa):
     id = prox.execute_kw(
-        db_odoo,
+        config['odoo']['db_odoo'],
         uid,
-        password,
+        config['odoo']['password'],
         'sale.order',
         'create', [{
             'partner_id': int(id_cliente),
@@ -126,7 +121,7 @@ def create_cabecera(id_cliente, id_tarifa):
 
 def producto(campo):
     contenido_odoo = prox.execute_kw(
-        db_odoo, uid, password,
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'product.template',
         'search_read',  # Buscar y leer
         [[[campo, '=', True ]]],  # Condición
@@ -139,7 +134,7 @@ def producto(campo):
 
 def consulta_tarifa(user_id):
     contenido_odoo = prox.execute_kw(
-        db_odoo, uid, password,
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'product.pricelist',
         'search_read',  # Buscar y leer
         [[['partner_id', '=', user_id]]],  # Condición
@@ -151,21 +146,21 @@ def consulta_tarifa(user_id):
     return contenido_odoo 
 
 def consulta_precio(product_id, tarifa_id):
+
     contenido_odoo = prox.execute_kw(
-        db_odoo, uid, password,
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'product.pricelist.item',
         'search_read',  # Buscar y leer
-        [[['product_tmpl_id', '=', product_id], ['pricelist_id', '=', tarifa_id]]],  # Condición
+        [[['product_tmpl_id', '=', product_id],['pricelist_id', '=', tarifa_id]]],  # Condición
         {
             'fields': ['fixed_price'],
             'order': 'name',
         }  # Campos que va a traer
     )
+    print(contenido_odoo)
     return contenido_odoo
 
-
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
-
 
 @app.route('/api/usuario_validacion/', methods=['GET', 'POST'])
 def usuario_validacion():
@@ -185,7 +180,6 @@ def usuario_validacion():
 
     return '', 400
 
-
 # ----------------------------------------------------------------------Productos--------------------------------------------------------------------------------------------
 
 @app.route('/api/producto_listado', methods=['POST'])
@@ -195,7 +189,6 @@ def producto_listado():
     print(datos.get('odoo_field'))
     for i in producto(datos.get('odoo_field')):
         lista.append({'title': i.get('name'), 'id': i.get('id')})
-        # print(lista)
     return jsonify({'resultado': lista})
 
 @app.route('/api/tarifa_listado', methods=['POST'])
@@ -211,15 +204,12 @@ def tarifa_listado():
 def producto_precio():
     if request.method == 'POST':
         datos = json.loads(request.data)
-        print(datos)
+        print(datos['product_id'])
         query = consulta_precio(
-            datos['product_id'],
-            datos['tarifa_id']
+            int(datos.get('product_id')),
+            int(datos.get('tarifa_id'))
         )
-        return{'price': query[0].get('fixed_price')}
-
-
-
+        return jsonify(query[0])
 
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------

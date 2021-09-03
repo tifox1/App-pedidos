@@ -9,13 +9,12 @@ import TextField from '@material-ui/core/TextField'
 import { Button, Table, TableBody, TableCell, TableHead } from '@material-ui/core'
 import Autocompletado from './Templates/Autocompletado'
 import { FormHelperText } from '@material-ui/core'
-import NavBar from './AppBar'
 import Caja from './Templates/Caja'
-import CheckIcon from '@material-ui/icons/Check'
+import NavBar from './AppBar'
 import AddIcon from '@material-ui/icons/Add'
 import LineaPedido from './LineasPedido'
 import { useHistory } from "react-router";
-import ExitToAppIcon from '@material-ui/icons/ExitToApp';
+import Tarifa from './seleccion_pedido_components/tabla';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
@@ -27,37 +26,10 @@ const Seleccion = () => {
     const [message, setMessage] = useState(false)
     const [productos, setProductos] = useState([])
     const [resultado, setResultado] = useState([])
-    const [valido, setValido] = useState(false)
-    const tarifa = useRef([])
+    const valido = useRef(false)
+    const id_tarifa = useRef(null)
     const result = useRef([])
-
-    const handleClick = (event) => {
-        setMessage(true)
-        fetch('/api/pedidos_create', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                tarifa: 1,
-                usuario: [{ id_usuario: cookies.get('usuario') }], //lugar donde ira la id del cliente
-                formulario: resultado,
-            })
-        }).then(
-            response => { return response.json() }
-        ).then(
-            data => {
-                setProductos(data.resultado)
-            }
-        )
-    }
-
-    const handleClose = (event, reason) => {
-        if (reason === 'clickaway') {
-            return
-        }
-        setMessage(false)
-    }
+    const precio_total = useRef(0)
 
 
     useEffect(() => {
@@ -77,26 +49,9 @@ const Seleccion = () => {
         ).then(
             data => {
                 setProductos(data.resultado)
-
             }
         )
-        //-----------------------------------------------------
-        fetch('/api/tarifa_listado', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                user_id: cookies.get('usuario').usuario.id
-            })
-        }).then(
-            response => { return response.json() }
-        ).then(
-            data => {
-                tarifa.current = data['resultado']
-            }
-        )
-    }, [])
+        },[])
 
 
     const formik = useFormik({
@@ -106,35 +61,40 @@ const Seleccion = () => {
             id_producto: ''
         },
         onSubmit: (value, { resetForm }) => {
-            let d = new Date()
-            value.date = d.toUTCString()
-            setResultado([...resultado, value])
-            result.current.splice(result.current.value, 0, value)
-            
-            if (resultado.length + 1 > 0) {
-                setValido(true)
-            } else {
-                setValido(false)
-            }
-            resetForm()
-            console.log(result.current)
-            fetch('/api/producto_precio', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    product_id: result.current[result.current.length - 1].id_producto,
-                    tarifa_id: 26,
-                })
-            }).then(
-                response => { return response.json() }
-            ).then(
-                data => {
-                    console.log(data)
-                    // setTarifa(data.resultado)
+            if(id_tarifa.current != null){
+                let d = new Date()
+                value.date = d.toUTCString()
+                if (resultado.length > 0) {
+                    valido.current = true
                 }
-            )
+                resetForm()
+                fetch('/api/producto_precio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        product_id: value.id_producto,
+                        tarifa_id: id_tarifa.current,
+                    })
+                }).then(
+                    response => { return response.json() }
+                ).then(
+                    data => {
+                        precio_total.current = precio_total.current + (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
+                        value['price'] = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
+                        // console.log(precio_total.current)
+                    }
+                )
+                setResultado([...resultado, value])
+                
+
+                if(resultado.length > 0){
+                    valido.current = true 
+                }
+            }else{
+                alert('Debe seleccionar la tarifa')
+            }
         },
         validationSchema: yup.object({
             cantidad: yup.number().required("Este campo es obligatorio"),
@@ -142,44 +102,25 @@ const Seleccion = () => {
         })
     })
     const handleDelete = (deleteItem) => {
+        // console.log(deleteItem)
+        precio_total.current = precio_total.current - deleteItem.price 
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
-        // console.log(resultado)
-     }
+        if (resultado.length > 0){
+            valido.current= true
+        }else{
+            valido.current= false
+        }
+        console.log(precio_total.current)
+    }
 
-    return (
+    return ( 
         <>
-            <NavBar />
+            <NavBar/>
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
                     <Grid container alignItems="stretch" spacing={2}>
-                        <Grid item xs={3}>
-                            <Autocompletado
-                                error={formik.errors.producto}
-                                name="Tarifa"
-                                options={tarifa}
-                                title="Tarifa"
-                                inputValue={formik.values.producto}
-                                disableClearable
-                                onInputChange={(event, newValue) => {
-                                    formik.setFieldValue('producto', newValue)
-                                }}
-                                onChange={(event, newValue) => {
-                                    formik.setFieldValue('id_producto', newValue.id)
-                                }}
-                            />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Button
-                                color="primary"
-                                variant="contained"
-                                endIcon={<CheckIcon />}
-                                disabled={!valido}
-                                onClick={handleClick}
-                            >
-                                Confirmar
-                            </Button>
-                        </Grid>
+                        <Tarifa valido={valido} id_tarifa={id_tarifa} resultado={resultado}/>
                         <Caja title="Nuevo Producto">
                             <form onSubmit={formik.handleSubmit}>
                                 <Grid container spacing={2}>
@@ -258,11 +199,7 @@ const Seleccion = () => {
                     </Grid>
                 </Caja>
             </Grid>
-            <Snackbar open={message} autoHideDuration={6000} onClose={handleClose}>
-                <Alert onClose={handleClose} severity="success">
-                    Tu formulario ha sido enviado!
-                </Alert>
-            </Snackbar>
+
         </>
 
     )
