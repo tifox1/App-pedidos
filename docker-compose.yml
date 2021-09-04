@@ -1,37 +1,46 @@
+version: "3.4"
 services:
   db:
     image: postgres:latest
+    container_name: pedidos_db
     ports:
-      - POSTGRES_DB = postgres
-      - POSTGRES_USER = postgres
-      - POSTGRES_PASSWORD = 3142
+      - "6432:5432"
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=3142
     volumes:
-      - "dbdata:/var/lib/postgresql/data"
+      - "dbdata_pedidos:/var/lib/postgresql/data"
     restart: always
-    network:
+    networks:
       app_pedidos:
-    
-  web: 
+
+  web:
     build: ./Backend/
+    container_name: pedidos_backend
     volumes:
       - ./Backend:/code
     ports:
-      - "8005:8000"
+      - "8010:8000"
     depends_on:
       - db
     restart: always
     networks:
       app_pedidos:
-  
   react:
-    build: ./Frontend/
+    build: ./Frontend/pedidos
+    container_name: pedidos_frontend
     ports:
-      - "3005:3000"
+      - "3010:3000"
     volumes:
-      - "./Frontend/public:/usr/src/app/public"
-      - "./Frontend/src:/usr/src/app/src"
+      - "./Frontend/pedidos/public:/usr/src/app/public"
+      - "./Frontend/pedidos/src:/usr/src/app/src"
     restart: always
     networks:
       app_pedidos:
 
-      
+volumes:
+  dbdata_pedidos:
+
+networks:
+  app_pedidos:
