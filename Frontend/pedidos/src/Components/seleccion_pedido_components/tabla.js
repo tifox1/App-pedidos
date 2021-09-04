@@ -79,7 +79,7 @@ const Tarifa = (props) => {
 
         },
         validationSchema: yup.object({
-            tarifa: yup.string().required("Este campo es obligatorio"),
+            // tarifa: yup.string().required("Este campo es obligatorio"),
         })
     })
 

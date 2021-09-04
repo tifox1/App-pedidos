@@ -87,7 +87,8 @@ const Seleccion = () => {
                     }
                 )
                 setResultado([...resultado, value])
-                
+                // formik.setFieldValue('producto', '')
+                // formik.setFieldValue('id_producto', '')
 
                 if(resultado.length > 0){
                     valido.current = true 
