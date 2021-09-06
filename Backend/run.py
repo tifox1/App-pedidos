@@ -4,7 +4,7 @@ from flask.helpers import url_for
 from flask_sqlalchemy import model
 from sqlalchemy.orm import query
 from werkzeug.utils import redirect
-from config import DevelopmentConfig
+from flask.cli import with_appcontext
 from flask_cors import CORS
 from flask import request
 from flask_script import Manager, Server
@@ -16,6 +16,8 @@ from flask_login import LoginManager, current_user, login_user, logout_user
 from xmlrpc import client
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
+from config import DevelopmentConfig
+
 
 config = ConfigParser()
 config.read('config.ini')
@@ -30,7 +32,9 @@ manager = Manager(app)
 admin = Admin(app)
 
 manager.add_command('db', MigrateCommand)
-
+@manager.command
+def create_db():
+    db.create_all()
 login = LoginManager(app)
 
 
@@ -304,6 +308,9 @@ def admin_user(usuario, contrasenia):
 admin.add_view(MyModelView(Usuario, db.session))
 admin.add_view(MyModelView(PedidosCabecera, db.session))
 admin.add_view(MyModelView(PedidosLineas, db.session))
+
+
+
 if __name__ == '__main__':
     db.init_app(app)
     manager.run()
