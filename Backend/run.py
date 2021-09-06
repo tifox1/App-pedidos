@@ -93,15 +93,25 @@ def create_linea(id, id_producto, cantidad):
     ''' 
     revisar impuestos
     '''
+    product_odoo = prox.execute_kw(
+        config['odoo']['db_odoo'],
+        uid,
+        config['odoo']['password'],
+        'product.product',
+        'search_read', [[
+            ['product_tmpl_id', '=', id_producto]
+        ]],
+        {'fields': ['display_name', 'id']}
+    )
     id = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
         config['odoo']['password'],
         'sale.order.line',
         'create', [{
-            'name': 'dfasdfasd',
+            'name': product_odoo[0]['display_name'],
             'order_id': id,
-            'product_id': id_producto,
+            'product_id': product_odoo[0]['id'],
             'product_uom_qty': cantidad,
             'price_unit': 1,
             'tax_id':  [(6, 0, [2])],
@@ -234,7 +244,7 @@ def pedidos_create():
 
             create_linea(
                 int(id_cabecera),
-                int(i.get('id_producto')),
+                int(i.get('id_producto')['id']),
                 int(i.get('cantidad'))
             )
 
