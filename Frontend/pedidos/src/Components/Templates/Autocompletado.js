@@ -6,6 +6,7 @@ const Autocompletado = (props) => {
             <FormControl variant="outlined" fullWidth>
                 <Autocomplete
                     {...props}
+                    value={props.value}
                     getOptionLabel={(option => option.title)}
                     renderInput={(params) =>
                         <TextField {...params}
