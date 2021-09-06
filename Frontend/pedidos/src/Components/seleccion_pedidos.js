@@ -61,6 +61,7 @@ const Seleccion = () => {
             id_producto: ''
         },
         onSubmit: (value, { resetForm }) => {
+            console.log('FORMIK 2')
             if(id_tarifa.current != null){
                 let d = new Date()
                 value.date = d.toUTCString()

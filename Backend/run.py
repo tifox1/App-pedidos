@@ -4,7 +4,7 @@ from flask.helpers import url_for
 from flask_sqlalchemy import model
 from sqlalchemy.orm import query
 from werkzeug.utils import redirect
-from config import DevelopmentConfig
+from flask.cli import with_appcontext
 from flask_cors import CORS
 from flask import request
 from flask_script import Manager, Server
@@ -16,6 +16,8 @@ from flask_login import LoginManager, current_user, login_user, logout_user
 from xmlrpc import client
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
+from config import DevelopmentConfig
+
 
 config = ConfigParser()
 config.read('config.ini')
@@ -30,7 +32,10 @@ manager = Manager(app)
 admin = Admin(app)
 
 manager.add_command('db', MigrateCommand)
-
+@manager.command
+def create_db():
+    db.create_all()
+    return 'Tabla creada'
 login = LoginManager(app)
 
 
@@ -157,7 +162,6 @@ def consulta_precio(product_id, tarifa_id):
             'order': 'name',
         }  # Campos que va a traer
     )
-    print(contenido_odoo)
     return contenido_odoo
 
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
@@ -227,11 +231,11 @@ def pedidos_create():
         # print(datos['formulario'][0])
 
         for i in datos['formulario']:
-            create_linea(
-                id_cabecera,
-                i.get('id_producto'),
-                i.get('cantidad')
 
+            create_linea(
+                int(id_cabecera),
+                int(i.get('id_producto')),
+                int(i.get('cantidad'))
             )
 
         # guardar datos a la base de datos de flask
@@ -246,7 +250,6 @@ def pedidos_create():
             db.session.add(model_cabecera)
             db.session.commit()
 
-        # print(consulta_linea(id_cabecera))
         for index in consulta_linea(id_cabecera):
             model_lineas = PedidosLineas(
                 cabecera_id=index.get('order_id')[0],
@@ -304,6 +307,9 @@ def admin_user(usuario, contrasenia):
 admin.add_view(MyModelView(Usuario, db.session))
 admin.add_view(MyModelView(PedidosCabecera, db.session))
 admin.add_view(MyModelView(PedidosLineas, db.session))
+
+
+
 if __name__ == '__main__':
     db.init_app(app)
     manager.run()

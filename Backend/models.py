@@ -3,7 +3,6 @@ from flask import Flask, app
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
 from flask_login import UserMixin
-
 import datetime
 db = SQLAlchemy()
 
@@ -39,3 +38,4 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key = True)
     name = db.Column(db.String(40))
     password = db.Column(db.String(100))
+
