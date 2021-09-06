@@ -15,6 +15,7 @@ function Alert(props) {
 }
 
 const Tarifa = (props) => {
+
     const history = useHistory()
     const cookies = new Cookies()
     const [message, setMessage] = useState(false)
@@ -60,6 +61,7 @@ const Tarifa = (props) => {
         onSubmit: (value, { resetForm }) => {
             let d = new Date()
             value.date = d.toUTCString()
+            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
             fetch('/api/pedidos_create', {
                 method: 'POST',
                 headers: {
@@ -84,7 +86,7 @@ const Tarifa = (props) => {
     })
 
     return (
-        <>
+        <form onSubmit={formik.handleSubmit}>
             <Grid item xs={6}>
                 <Autocompletado
                     error={formik.errors.tarifa}
@@ -104,6 +106,7 @@ const Tarifa = (props) => {
             </Grid>
             <Grid item xs={6}>
                 <Button
+                    type="submit"
                     color="primary"
                     variant="contained"
                     endIcon={<CheckIcon />}
@@ -117,7 +120,7 @@ const Tarifa = (props) => {
                     Tu formulario ha sido enviado!
                 </Alert>
             </Snackbar>
-        </>
+        </form>
 
     )
 };

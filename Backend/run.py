@@ -35,6 +35,7 @@ manager.add_command('db', MigrateCommand)
 @manager.command
 def create_db():
     db.create_all()
+    return 'Tabla creada'
 login = LoginManager(app)
 
 
@@ -161,7 +162,6 @@ def consulta_precio(product_id, tarifa_id):
             'order': 'name',
         }  # Campos que va a traer
     )
-    print(contenido_odoo)
     return contenido_odoo
 
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
@@ -231,11 +231,11 @@ def pedidos_create():
         # print(datos['formulario'][0])
 
         for i in datos['formulario']:
-            create_linea(
-                id_cabecera,
-                i.get('id_producto'),
-                i.get('cantidad')
 
+            create_linea(
+                int(id_cabecera),
+                int(i.get('id_producto')),
+                int(i.get('cantidad'))
             )
 
         # guardar datos a la base de datos de flask
@@ -250,7 +250,6 @@ def pedidos_create():
             db.session.add(model_cabecera)
             db.session.commit()
 
-        # print(consulta_linea(id_cabecera))
         for index in consulta_linea(id_cabecera):
             model_lineas = PedidosLineas(
                 cabecera_id=index.get('order_id')[0],
