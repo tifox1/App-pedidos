@@ -15,6 +15,8 @@ from sqlalchemy.exc import IntegrityError
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired
 from werkzeug.security import check_password_hash, generate_password_hash
+from models import Usuario
+
 
 from models import User, db
 
@@ -84,6 +86,8 @@ class UserModelView(LoginModelView):
 
         return self.render('admin/create_user.html', form=form)
 
+
 admin = Admin(template_mode='bootstrap3', index_view=CustomAdminIndex())
 admin.add_view(UserModelView(User, db.session))
+admin.add_view(ModelView(Usuario, db.session))
 admin.add_link(MenuLink(name='Logout', category='', url="/admin/logout"))

@@ -1,0 +1,67 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="/admin/static/bootstrap/bootstrap3/swatch/{{ swatch }}/bootstrap.min.css?v=3.3.5" rel="stylesheet">
+        <link href="/admin/static/admin/css/bootstrap3/admin.css?v=1.1.1" rel="stylesheet">
+        <link href="/admin/static/admin/css/bootstrap3/submenu.css" rel="stylesheet">
+        <style>
+            body {
+                padding-top: 4px;
+            }
+        </style>
+        <link
+            href="/admin/static/vendor/select2/select2.css?v=3.5.2"
+            rel="stylesheet"
+        >
+        <link
+            href="/admin/static/vendor/select2/select2-bootstrap3.css?v=1.4.6"
+            rel="stylesheet"
+        >
+        <link
+            href="/admin/static/vendor/bootstrap-daterangepicker/daterangepicker-bs3.css?v=1.3.22"
+            rel="stylesheet"
+        >
+    </head>
+    <body>
+        <div class="container">
+            <div class="row">
+                <div class="col">
+                    <h2>Login</h2>
+                </div>
+                {% if error %}
+                <div class="col alert alert-danger" role="alert">
+                    {{ error }}
+                </div>
+                {% endif %}
+                <div class="col">
+                    <form action="/admin/login", method="POST">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        {{ form.hidden_tag() }}
+                                        {{ wtf.form_field(form.user) }}
+                                        {{ wtf.form_field(form.password) }}
+                                        {{ wtf.form_field(form.remember) }}
+                                        <button type="submit" class="btn btn-primary">
+                                            Sign in
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <script
+                    src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"
+                    integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj"
+                    crossorigin="anonymous"
+                >
+                </script>
+            </div>
+        </div>
+    </body>
+</html>

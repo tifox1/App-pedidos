@@ -39,7 +39,7 @@ const Tarifa = (props) => {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                user_id: cookies.get('usuario').usuario.id
+                user_id: cookies.get('usuario').usuario.id,
             })
         }).then(
             response => { return response.json() }

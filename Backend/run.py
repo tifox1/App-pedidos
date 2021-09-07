@@ -1,5 +1,6 @@
 from configparser import ConfigParser
 from flask import Flask, json, jsonify
+from flask.blueprints import Blueprint
 from flask.helpers import url_for
 from flask_sqlalchemy import model
 from sqlalchemy.orm import query
@@ -12,8 +13,10 @@ from flask_migrate import Migrate, MigrateCommand
 from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_login import LoginManager, current_user, login_user, logout_user
-
 from xmlrpc import client
+from flask_bootstrap import Bootstrap
+
+from admin import admin_page, admin
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
 from config import DevelopmentConfig
@@ -22,6 +25,7 @@ from config import DevelopmentConfig
 config = ConfigParser()
 config.read('config.ini')
 app = Flask(__name__)
+bootstrap = Bootstrap(app)
 app.config.from_object(DevelopmentConfig)
 # app.config.from_pyfile('config.cfg')
 app.secret_key = 'esta_clave_es_secreta'
@@ -29,7 +33,10 @@ CORS(app)
 app.config['CORS_HEADERS'] = 'Content-Type'
 migrate = Migrate(app, db)
 manager = Manager(app)
-admin = Admin(app)
+admin.init_app(app)
+app.register_blueprint(admin_page)
+# connection = p.connect(dbname='app_db', user= 'postgres', host='dbdata_pedidos:/var/lib/postgresql/data', password='3142', port=5432)
+
 
 manager.add_command('db', MigrateCommand)
 @manager.command
@@ -37,6 +44,13 @@ def create_db():
     db.create_all()
     return 'Tabla creada'
 login = LoginManager(app)
+
+@manager.command
+def super_u(user, password):
+    user = User(name=user, password=password)
+    db.session.add(user)
+    db.session.commit()
+    return f"Superusuario '{user}' creado exitosamente!"
 
 
 @login.user_loader
@@ -262,51 +276,7 @@ def pedidos_create():
 
     return '', 502
 
-# ----------------------------------------------------------------------ADMIN----------------------------------------------------------------------------------------------------
 
-
-class MyModelView(ModelView):
-
-    def is_accessible(self):
-        return current_user.is_authenticated
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login'))
-
-
-class MyAdminView(AdminIndexView):
-    def is_accessible(self):
-        return current_user.is_authenticated
-
-
-@app.route('/login')
-def login_admin():
-
-    user = User.query.get(1)
-    login_user(user)
-    return 'Logged in'
-
-
-@app.route('/logout')
-def logout():
-    logout_user()
-    return 'Logged out'
-
-
-@app.route('/admin_user/<usuario>/<contrasenia>')
-def admin_user(usuario, contrasenia):
-    query = User(
-        name=usuario,
-        password=contrasenia
-    )
-    db.session.add(query)
-    db.session.commit()
-    return 'Usuario creado'
-
-
-admin.add_view(MyModelView(Usuario, db.session))
-admin.add_view(MyModelView(PedidosCabecera, db.session))
-admin.add_view(MyModelView(PedidosLineas, db.session))
 
 
 
