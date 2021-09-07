@@ -19,7 +19,6 @@ const Tarifa = (props) => {
     const history = useHistory()
     const cookies = new Cookies()
     const [message, setMessage] = useState(false)
-    const [resultado, setResultado] = useState([])
     const tarifa_listado = useRef([])
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
@@ -50,7 +49,7 @@ const Tarifa = (props) => {
                 // console.log(tarifa_listado.current)
             }
         )
-
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     },[])
 
     const formik = useFormik({

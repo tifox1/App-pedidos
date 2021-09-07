@@ -18,8 +18,6 @@ import { Collapse } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert'
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { Redirect } from 'react-router';
-
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -52,6 +50,7 @@ const Login = (props) => {
             if(cookies.get('usuario')){
                 history.push('/')
             }
+            // eslint-disable-next-line react-hooks/exhaustive-deps
         },[])
 
     const handleClose = (e, reason) => {

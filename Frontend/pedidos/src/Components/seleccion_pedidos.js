@@ -23,12 +23,10 @@ function Alert(props) {
 const Seleccion = () => {
     const history = useHistory()
     const cookies = new Cookies()
-    const [message, setMessage] = useState(false)
     const [productos, setProductos] = useState([])
     const [resultado, setResultado] = useState([])
     const valido = useRef(false)
     const id_tarifa = useRef(null)
-    const result = useRef([])
     const precio_total = useRef(0)
 
 
@@ -61,21 +59,20 @@ const Seleccion = () => {
             id_producto: ''
         },
         onSubmit: (value, { resetForm }) => {
-            console.log('FORMIK 2')
             if(id_tarifa.current != null){
+                resetForm()
                 let d = new Date()
                 value.date = d.toUTCString()
                 if (resultado.length > 0) {
                     valido.current = true
                 }
-                resetForm()
                 fetch('/api/producto_precio', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        product_id: value.id_producto,
+                        product_id: value.id_producto.id,
                         tarifa_id: id_tarifa.current,
                     })
                 }).then(
@@ -83,17 +80,15 @@ const Seleccion = () => {
                 ).then(
                     data => {
                         precio_total.current = precio_total.current + (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
-                        value['price'] = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
-                        // console.log(precio_total.current)
+                        value.price = data.fixed_price
+                        value.total_price = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
+
+                        if(resultado.length > 0){
+                            valido.current = true
+                        }
+                        setResultado([...resultado, value])
                     }
                 )
-                setResultado([...resultado, value])
-                // formik.setFieldValue('producto', '')
-                // formik.setFieldValue('id_producto', '')
-
-                if(resultado.length > 0){
-                    valido.current = true 
-                }
             }else{
                 alert('Debe seleccionar la tarifa')
             }
@@ -104,7 +99,6 @@ const Seleccion = () => {
         })
     })
     const handleDelete = (deleteItem) => {
-        // console.log(deleteItem)
         precio_total.current = precio_total.current - deleteItem.price 
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
@@ -140,19 +134,24 @@ const Seleccion = () => {
                                     </Grid>
                                     <Grid item xs={4}>
                                         <Autocompletado
+                                            value={formik.values.id_producto}
                                             error={formik.errors.producto}
-                                            name="producto"
+                                            name="id_producto"
                                             options={productos}
                                             title="Descripción"
                                             inputValue={formik.values.producto}
                                             disableClearable
-                                            onInputChange={(event, newValue) => {
-                                                formik.setFieldValue('producto', newValue)
-                                                console.log(newValue)
-                                            }}
                                             onChange={(event, newValue) => {
-                                                formik.setFieldValue('id_producto', newValue.id)
-                                                console.log(newValue)
+                                                formik.setFieldValue(
+                                                    'id_producto',
+                                                    newValue
+                                                )
+                                            }}
+                                            onInputChange={(event, newInputValue) => {
+                                                formik.setFieldValue(
+                                                    'producto',
+                                                    newInputValue
+                                                )
                                             }}
                                         />
                                     </Grid>
