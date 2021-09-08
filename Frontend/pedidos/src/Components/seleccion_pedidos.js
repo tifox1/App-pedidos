@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
 import TextField from '@material-ui/core/TextField'
-import { Button, Table, TableBody, TableCell, TableHead } from '@material-ui/core'
+import { Button, Table, TableBody, TableCell, TableHead, Typography } from '@material-ui/core'
 import Autocompletado from './Templates/Autocompletado'
 import { FormHelperText } from '@material-ui/core'
 import Caja from './Templates/Caja'
@@ -89,7 +89,7 @@ const Seleccion = () => {
                         setResultado([...resultado, value])
                     }
                 )
-            }else{
+            } else {
                 alert('Debe seleccionar la tarifa')
             }
         },
@@ -99,7 +99,8 @@ const Seleccion = () => {
         })
     })
     const handleDelete = (deleteItem) => {
-        precio_total.current = precio_total.current - deleteItem.price 
+        console.log(deleteItem)
+        precio_total.current = precio_total.current - deleteItem.total_price
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
         if (resultado.length > 0){
@@ -116,7 +117,13 @@ const Seleccion = () => {
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
                     <Grid container alignItems="stretch" spacing={2}>
-                        <Tarifa valido={valido} id_tarifa={id_tarifa} resultado={resultado}/>
+                        <Tarifa 
+                            valido={valido} 
+                            id_tarifa={id_tarifa} 
+                            resultado={resultado} 
+                            setResultado={setResultado}
+                            precio_total={precio_total.current}
+                        />
                         <Caja title="Nuevo Producto">
                             <form onSubmit={formik.handleSubmit}>
                                 <Grid container spacing={2}>
@@ -201,6 +208,11 @@ const Seleccion = () => {
                         </Caja>
                     </Grid>
                 </Caja>
+                <Grid item>
+                    <Typography>
+                        Precio Total: {precio_total.current}
+                    </Typography>
+                </Grid>
             </Grid>
 
         </>

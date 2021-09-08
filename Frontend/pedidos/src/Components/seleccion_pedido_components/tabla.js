@@ -5,10 +5,11 @@ import * as yup from 'yup'
 import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
-import { Button } from '@material-ui/core'
+import { Button, Paper } from '@material-ui/core'
 import Autocompletado from '../Templates/Autocompletado';
 import CheckIcon from '@material-ui/icons/Check'
 import { useHistory } from "react-router";
+import Caja from '../Templates/Caja';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
@@ -50,7 +51,7 @@ const Tarifa = (props) => {
             }
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
+    }, [])
 
     const formik = useFormik({
         initialValues: {
@@ -60,7 +61,8 @@ const Tarifa = (props) => {
         onSubmit: (value, { resetForm }) => {
             let d = new Date()
             value.date = d.toUTCString()
-            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA')
+            props.valido.current = false
+            props.precio_total = null
             fetch('/api/pedidos_create', {
                 method: 'POST',
                 headers: {
@@ -74,9 +76,13 @@ const Tarifa = (props) => {
             }).then(
                 response => { return response.json() }
             ).then(
-
+                data => {
+                }
             )
             resetForm()
+            props.setResultado([])
+            // props.valido.current = false
+            // props.precio_total = null
 
         },
         validationSchema: yup.object({
@@ -85,42 +91,54 @@ const Tarifa = (props) => {
     })
 
     return (
-        <form onSubmit={formik.handleSubmit}>
-            <Grid item xs={6}>
-                <Autocompletado
-                    error={formik.errors.tarifa}
-                    name="Tarifa"
-                    options={tarifa_listado.current}
-                    title="Tarifa"
-                    inputValue={formik.values.tarifa}
-                    disableClearable
-                    onInputChange={(event, newValue) => {
-                        formik.setFieldValue('tarifa', newValue)
-                    }}
-                    onChange={(event, newValue) => {
-                        formik.setFieldValue('id_tarifa', newValue.id)
-                        props.id_tarifa.current = newValue.id
-                    }}
-                />
-            </Grid>
-            <Grid item xs={6}>
-                <Button
-                    type="submit"
-                    color="primary"
-                    variant="contained"
-                    endIcon={<CheckIcon />}
-                    disabled={!props.valido.current}
-                >
-                    Confirmar
-                </Button>
-            </Grid>
+        <>
+            <Caja>
+                <form onSubmit={formik.handleSubmit}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={8}>
+                                    <Autocompletado
+                                        error={formik.errors.tarifa}
+                                        name="Tarifa"
+                                        options={tarifa_listado.current}
+                                        title="Tarifa"
+                                        inputValue={formik.values.tarifa}
+                                        disableClearable
+                                        onInputChange={(event, newValue) => {
+                                            formik.setFieldValue('tarifa', newValue)
+                                        }}
+                                        onChange={(event, newValue) => {
+                                            formik.setFieldValue('id_tarifa', newValue.id)
+                                            props.id_tarifa.current = newValue.id
+                                        }}
+                                    />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Button
+                                        type="submit"
+                                        color="primary"
+                                        variant="contained"
+                                        endIcon={<CheckIcon />}
+                                        disabled={!props.valido.current}
+                                    >
+                                        Confirmar
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                    
+                        </Grid>
+                    </Grid>
+
+                </form>
+            </Caja>
+
             <Snackbar open={message} autoHideDuration={6000} onClose={handleClose}>
                 <Alert onClose={handleClose} severity="success">
                     Tu formulario ha sido enviado!
                 </Alert>
             </Snackbar>
-        </form>
-
+        </>
     )
 };
 export default Tarifa;
