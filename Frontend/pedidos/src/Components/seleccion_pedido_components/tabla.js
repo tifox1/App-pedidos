@@ -51,7 +51,7 @@ const Tarifa = (props) => {
             }
         )
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [])
+    },[])
 
     const formik = useFormik({
         initialValues: {
@@ -61,8 +61,6 @@ const Tarifa = (props) => {
         onSubmit: (value, { resetForm }) => {
             let d = new Date()
             value.date = d.toUTCString()
-            props.valido.current = false
-            props.precio_total = null
             fetch('/api/pedidos_create', {
                 method: 'POST',
                 headers: {
@@ -81,9 +79,7 @@ const Tarifa = (props) => {
             )
             resetForm()
             props.setResultado([])
-            // props.valido.current = false
-            // props.precio_total = null
-
+            window.location.reload()
         },
         validationSchema: yup.object({
             // tarifa: yup.string().required("Este campo es obligatorio"),

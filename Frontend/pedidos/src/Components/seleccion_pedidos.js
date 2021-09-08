@@ -63,9 +63,7 @@ const Seleccion = () => {
                 resetForm()
                 let d = new Date()
                 value.date = d.toUTCString()
-                if (resultado.length > 0) {
-                    valido.current = true
-                }
+
                 fetch('/api/producto_precio', {
                     method: 'POST',
                     headers: {
@@ -82,13 +80,13 @@ const Seleccion = () => {
                         precio_total.current = precio_total.current + (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
                         value.price = data.fixed_price
                         value.total_price = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
-
-                        if(resultado.length > 0){
-                            valido.current = true
-                        }
                         setResultado([...resultado, value])
+                        console.log(resultado)
                     }
                 )
+                if(resultado.length > 0){
+                    valido.current = true
+                }
             } else {
                 alert('Debe seleccionar la tarifa')
             }
@@ -122,7 +120,7 @@ const Seleccion = () => {
                             id_tarifa={id_tarifa} 
                             resultado={resultado} 
                             setResultado={setResultado}
-                            precio_total={precio_total.current}
+                            precio_total={precio_total}
                         />
                         <Caja title="Nuevo Producto">
                             <form onSubmit={formik.handleSubmit}>
