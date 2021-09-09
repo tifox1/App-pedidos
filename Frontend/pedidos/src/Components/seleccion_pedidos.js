@@ -84,7 +84,7 @@ const Seleccion = () => {
                         console.log(resultado)
                     }
                 )
-                if(resultado.length > 0){
+                if(resultado.length + 1> 0){
                     valido.current = true
                 }
             } else {
