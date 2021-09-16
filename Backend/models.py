@@ -23,8 +23,8 @@ class PedidosCabecera(db.Model):
     id =  db.Column(db.Integer, primary_key= True, autoincrement=False, unique= True)
     nombre  = db.Column(db.String())
     tarifa = db.Column(db.Integer)
+    precio_total=db.Column(db.String)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.partner_id'))
-
     pedidos_lineas = db.relationship('PedidosLineas')
 
 

@@ -48,7 +48,7 @@ const Login = (props) => {
     useEffect(
         ()=>{
             if(cookies.get('usuario')){
-                history.push('/')
+                history.push('/menu')
             }
             // eslint-disable-next-line react-hooks/exhaustive-deps
         },[])
@@ -92,8 +92,9 @@ const Login = (props) => {
             }).then(data => {
                 console.log(data)
                 if (data) {
+                    console.log(data)
                     cookies.set('usuario', data, {path: '/'})
-                    history.push('/')
+                    history.push('/menu')
                 }
             }).catch(e => {
                 if (e.name === 'TypeError') {

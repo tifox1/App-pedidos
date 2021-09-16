@@ -14,7 +14,7 @@ import NavBar from './AppBar'
 import AddIcon from '@material-ui/icons/Add'
 import LineaPedido from './LineasPedido'
 import { useHistory } from "react-router";
-import Tarifa from './seleccion_pedido_components/tabla';
+import Tarifa from './seleccion_pedido_components/Tarifa';
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
@@ -31,7 +31,7 @@ const Seleccion = () => {
 
 
     useEffect(() => {
-        if(!cookies.get('usuario')){
+        if (!cookies.get('usuario')) {
             history.push('/login')
         }
         fetch('/api/producto_listado', {
@@ -49,7 +49,7 @@ const Seleccion = () => {
                 setProductos(data.resultado)
             }
         )
-        },[])
+    }, [])
 
 
     const formik = useFormik({
@@ -59,7 +59,7 @@ const Seleccion = () => {
             id_producto: ''
         },
         onSubmit: (value, { resetForm }) => {
-            if(id_tarifa.current != null){
+            if (id_tarifa.current != null) {
                 resetForm()
                 let d = new Date()
                 value.date = d.toUTCString()
@@ -84,7 +84,7 @@ const Seleccion = () => {
                         console.log(resultado)
                     }
                 )
-                if(resultado.length + 1> 0){
+                if (resultado.length + 1 > 0) {
                     valido.current = true
                 }
             } else {
@@ -101,24 +101,24 @@ const Seleccion = () => {
         precio_total.current = precio_total.current - deleteItem.total_price
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
-        if (resultado.length > 0){
-            valido.current= true
-        }else{
-            valido.current= false
+        if (resultado.length > 0) {
+            valido.current = true
+        } else {
+            valido.current = false
         }
         console.log(precio_total.current)
     }
 
-    return ( 
+    return (
         <>
-            <NavBar/>
+            <NavBar />
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
                     <Grid container alignItems="stretch" spacing={2}>
-                        <Tarifa 
-                            valido={valido} 
-                            id_tarifa={id_tarifa} 
-                            resultado={resultado} 
+                        <Tarifa
+                            valido={valido}
+                            id_tarifa={id_tarifa}
+                            resultado={resultado}
                             setResultado={setResultado}
                             precio_total={precio_total}
                         />

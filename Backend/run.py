@@ -15,6 +15,7 @@ from flask_admin.contrib.sqla import ModelView
 from flask_login import LoginManager, current_user, login_user, logout_user
 from xmlrpc import client
 from flask_bootstrap import Bootstrap
+import logging
 
 from admin import admin_page, admin
 from models import db
@@ -36,6 +37,8 @@ manager = Manager(app)
 admin.init_app(app)
 app.register_blueprint(admin_page)
 # connection = p.connect(dbname='app_db', user= 'postgres', host='dbdata_pedidos:/var/lib/postgresql/data', password='3142', port=5432)
+_logger = logging.getLogger(__name__)
+
 
 
 manager.add_command('db', MigrateCommand)
@@ -80,7 +83,7 @@ def consulta_cabecera(id):
         'search_read',  # Buscar y leer
         [[['id', '=', id]]],  # Condición
         {
-            'fields': ['name', 'pricelist_id', 'partner_id', 'id'],
+            'fields': ['name', 'pricelist_id', 'partner_id', 'id', 'amount_total'],
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -103,7 +106,7 @@ def consulta_linea(id):
     return resultado
 
 
-def create_linea(id, id_producto, cantidad):
+def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
     ''' 
     revisar impuestos
     '''
@@ -127,7 +130,8 @@ def create_linea(id, id_producto, cantidad):
             'order_id': id,
             'product_id': product_odoo[0]['id'],
             'product_uom_qty': cantidad,
-            'price_unit': 1,
+            'price_unit': precio_unitario,
+            'price_total': precio_total,
             'tax_id':  [(6, 0, [2])],
             # 'customer_lead': 223,
             'product_uom': 1
@@ -161,6 +165,7 @@ def producto(campo):
     )
     return contenido_odoo
 
+
 def consulta_tarifa(user_id):
     contenido_odoo = prox.execute_kw(
         config['odoo']['db_odoo'], uid, config['odoo']['password'],
@@ -169,6 +174,19 @@ def consulta_tarifa(user_id):
         [[['partner_id', '=', user_id]]],  # Condición
         {
             'fields': ['name', 'id'],
+            'order': 'name',
+        }  # Campos que va a traer
+    )
+    return contenido_odoo 
+
+def historial(id):
+    contenido_odoo = prox.execute_kw(
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
+        'sale.order',
+        'search_read',  # Buscar y leer
+        [[['id', '=', id]]],  # Condición
+        {
+            'fields': ['name', 'state', 'currency_id'],
             'order': 'name',
         }  # Campos que va a traer
     )
@@ -214,10 +232,10 @@ def usuario_validacion():
 def producto_listado():
     datos= json.loads(request.data)
     lista = list()
-    print(datos.get('odoo_field'))
     for i in producto(datos.get('odoo_field')):
         lista.append({'title': i.get('name'), 'id': i.get('id')})
     return jsonify({'resultado': lista})
+
 
 @app.route('/api/tarifa_listado', methods=['POST'])
 def tarifa_listado():
@@ -232,7 +250,6 @@ def tarifa_listado():
 def producto_precio():
     if request.method == 'POST':
         datos = json.loads(request.data)
-        print(datos['product_id'])
         query = consulta_precio(
             int(datos.get('product_id')),
             int(datos.get('tarifa_id'))
@@ -241,35 +258,52 @@ def producto_precio():
 
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------
+@app.route('/api/pedidos_historial', methods=['POST', 'GET'])
+def pedidos_historial():
+    lista = list()
+    datos= json.loads(request.data)
+    queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
+    if len(queries) > 0:
+        print(historial(7949))
+        for index in queries:
+            consulta_odoo= historial(index.id)
+            lista.append({
+                'id': index.id,
+                'name': index.nombre, 
+                'state': consulta_odoo[0].get('state'),
+                'currency_id': consulta_odoo[0]['currency_id'][1],
+                'amount_total': index.precio_total
+            })
+        return jsonify(lista)
+    return '', 405
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
 def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
-        print(datos)
         # guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
             datos['tarifa']
         )
-        # print(datos['formulario'][0])
 
         for i in datos['formulario']:
-
             create_linea(
                 int(id_cabecera),
                 int(i.get('id_producto')['id']),
-                int(i.get('cantidad'))
+                int(i.get('cantidad')),
+                float(i.get('total_price')),
+                float(i.get('price'))
             )
 
         # guardar datos a la base de datos de flask
-        print(id_cabecera)
         for index in consulta_cabecera(id_cabecera):
             model_cabecera = PedidosCabecera(
                 id=id_cabecera,
                 nombre=index.get('name'),
                 id_usuario=index.get('partner_id')[0],
                 tarifa=index.get('pricelist_id')[0],
+                precio_total= index.get('amount_total')
             )
             db.session.add(model_cabecera)
             db.session.commit()

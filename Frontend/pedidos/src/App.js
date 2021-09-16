@@ -8,6 +8,7 @@ import {
   Route,
 } from 'react-router-dom';
 import Login from './Components/Login';
+import Menu from './Components/Menu';
 
 const theme = createTheme({
   palette: {
@@ -25,8 +26,11 @@ function App() {
             <Route path="/login">
               <Login />
             </Route>
-            <Route path="/">
+            <Route path="/pedidos">
               <Seleccion />
+            </Route>
+            <Route path="/menu">
+              <Menu/>
             </Route>
           </Switch>
         </Router>
