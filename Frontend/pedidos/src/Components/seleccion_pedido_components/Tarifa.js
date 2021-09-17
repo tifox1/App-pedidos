@@ -78,8 +78,9 @@ const Tarifa = (props) => {
                 }
             )
             resetForm()
+            setMessage(true)
             props.setResultado([])
-            window.location.reload()
+            history.push('/menu')
         },
         validationSchema: yup.object({
             // tarifa: yup.string().required("Este campo es obligatorio"),
