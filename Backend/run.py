@@ -157,7 +157,7 @@ def producto(campo):
         config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'product.template',
         'search_read',  # Buscar y leer
-        [[[campo, '=', True ]]],  # Condición
+        [[[campo, '=', True, ]]],  # Condición
         {
             'fields': ['name', 'id'],
             'order': 'name',

@@ -92,7 +92,7 @@ const Tarifa = (props) => {
             <Caja>
                 <form onSubmit={formik.handleSubmit}>
                     <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                        <Grid item xs={6} sm={6}>
                             <Grid container spacing={2}>
                                 <Grid item xs={8}>
                                     <Autocompletado
@@ -111,7 +111,7 @@ const Tarifa = (props) => {
                                         }}
                                     />
                                 </Grid>
-                                <Grid item xs={12}>
+                                <Grid item xs={12} sm={12}>
                                     <Button
                                         type="submit"
                                         color="primary"

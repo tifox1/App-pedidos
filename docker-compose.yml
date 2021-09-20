@@ -39,6 +39,20 @@ services:
     networks:
       app_pedidos:
 
+  nginx:
+    image: nginx:latest
+    container_name: app_pedidos_nginx
+    ports:
+      - "90:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./Frontend/pedidos/build:/usr/src/app
+    restart: always
+    depends_on:
+        - web
+    networks:
+      app_pedidos:
+
 volumes:
   dbdata_pedidos:
 

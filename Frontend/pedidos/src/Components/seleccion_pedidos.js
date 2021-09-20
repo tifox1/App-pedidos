@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
 import TextField from '@material-ui/core/TextField'
-import { Button, Table, TableBody, TableCell, TableHead, Typography } from '@material-ui/core'
+import { Button, Table, TableBody, TableCell, TableHead, TableContainer, Typography } from '@material-ui/core'
 import Autocompletado from './Templates/Autocompletado'
 import { FormHelperText } from '@material-ui/core'
 import Caja from './Templates/Caja'
@@ -174,35 +174,37 @@ const Seleccion = () => {
                             </form>
                         </Caja>
                         <Caja title="Productos">
-                            <Table>
-                                <TableHead>
-                                    <TableCell>Descripción</TableCell>
-                                    <TableCell align="right">
-                                        Cantidad
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        Precio Unitario
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        Total
-                                    </TableCell>
-                                    <TableCell></TableCell>
-                                </TableHead>
-                                <TableBody>
-                                    {resultado.map(res => {
-                                        return (
-                                            <LineaPedido
-                                                key={res.product_id}
-                                                item={res}
-                                                handleDelete={
-                                                    () => handleDelete(res)
-                                                }
-                                            />
-                                        )
-                                    }
-                                    )}
-                                </TableBody>
-                            </Table>
+                            <TableContainer>
+                                <Table>
+                                    <TableHead>
+                                        <TableCell>Descripción</TableCell>
+                                        <TableCell align="right">
+                                            Cantidad
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            Precio Unitario
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            Total
+                                        </TableCell>
+                                        <TableCell></TableCell>
+                                    </TableHead>
+                                    <TableBody>
+                                        {resultado.map(res => {
+                                            return (
+                                                <LineaPedido
+                                                    key={res.product_id}
+                                                    item={res}
+                                                    handleDelete={
+                                                        () => handleDelete(res)
+                                                    }
+                                                />
+                                            )
+                                        }
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </TableContainer>
                         </Caja>
                     </Grid>
                 </Caja>
