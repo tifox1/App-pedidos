@@ -8,12 +8,19 @@ import { useHistory } from "react-router";
 import { Paper } from '@material-ui/core'
 import {
     Link
-  } from "react-router-dom";
+} from "react-router-dom";
+
+import TableContainer from '@material-ui/core/TableContainer';
+import TableRow from '@material-ui/core/TableRow';
+
+
+
 
 const Menu = () => {
     const cookies = new Cookies()
     const history = useHistory()
-    const [historial, setHistorial] = useState([])
+    const [cabecera, setCabecera] = useState([])
+    const [lineas, setLineas] = useState([])
 
     useEffect(() => {
         if (!cookies.get('usuario')) {
@@ -31,7 +38,9 @@ const Menu = () => {
             response => { return response.json() }
         ).then(
             data => {
-                setHistorial(data)
+                // console.log(data)
+                setCabecera(data.cabecera)
+                setLineas(data.lineas)
             }
         )
     }, [])
@@ -39,61 +48,47 @@ const Menu = () => {
     return (
         <>
             <NavBar />
-            <Grid container spacing={2}>
-                <Grid item
-                    xs={12}>
                     <Grid container spacing={2}>
-                        <Grid item
-                            xs={12}
-                            align="center"
-                        >
-                            <Typography variant="h3" style={{ fontWeight: 500 }}>Haga su pedido</Typography>
-                        </Grid>
+
                         <Grid item
                             xs={12}
                             align="center"
                         >
                             <Button color="primary" variant="contained" component={Link} to="/pedidos">
-                                <i  class="material-icons right">add</i>nuevo pedido
+                                <i class="material-icons right">add</i>nuevo pedido
                             </Button>
 
                         </Grid>
                     </Grid>
-                </Grid>
-                <Grid item
-                    xs={12}
-                >
-                    <Caja title='Historial'>
-                        <Table>
-                            <TableHead>
-                                <TableCell>
-                                    Nombre
-                                </TableCell>
-                                <TableCell>
-                                    Precio Total
-                                </TableCell>
-                                <TableCell>
-                                    Tipo de Tarifa
-                                </TableCell>
-                                <TableCell>
-                                    Estado
-                                </TableCell>
-                            </TableHead>
-                            <TableBody>
-                                {historial.map(res => {
-                                    return (
-                                        <LineaHistorial
-                                            key={res.id}
-                                            item={res}
-                                        />
-                                    )
-                                }
-                                )}
-                            </TableBody>
-                        </Table>
-                    </Caja>
-                </Grid>
-            </Grid>
+                    
+                    <TableContainer>
+
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell />
+                                        <TableCell>Nombre</TableCell>
+                                        <TableCell align="right">Precio Total</TableCell>
+                                        <TableCell align="right">Tipo de tarifa</TableCell>
+                                        <TableCell align="right">Estado</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {cabecera.map(res => {
+                                        return (
+                                            <LineaHistorial
+                                                key={res.id}
+                                                cabecera={res}
+                                                lineas={lineas}
+                                            />
+                                        )
+                                    }
+                                    )}
+                                </TableBody>
+                            </Table>
+                    </TableContainer>
+                    {/* </Caja> */}
+                
 
 
             {/* ---------------------------------------------------------------------------------------------- */}

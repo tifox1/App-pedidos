@@ -15,6 +15,9 @@ import AddIcon from '@material-ui/icons/Add'
 import LineaPedido from './LineasPedido'
 import { useHistory } from "react-router";
 import Tarifa from './seleccion_pedido_components/Tarifa';
+import NumberFormat from "react-number-format";
+
+
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
@@ -34,21 +37,7 @@ const Seleccion = () => {
         if (!cookies.get('usuario')) {
             history.push('/login')
         }
-        fetch('/api/producto_listado', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                odoo_field: cookies.get('usuario').usuario.odoo_field
-            })
-        }).then(
-            response => { return response.json() }
-        ).then(
-            data => {
-                setProductos(data.resultado)
-            }
-        )
+
     }, [])
 
 
@@ -56,34 +45,39 @@ const Seleccion = () => {
         initialValues: {
             cantidad: '',
             producto: '',
-            id_producto: ''
+            id_producto: '',
+            price:'',
         },
         onSubmit: (value, { resetForm }) => {
             if (id_tarifa.current != null) {
+                precio_total.current = precio_total.current + (value.price * value.cantidad)
+                value.total_price = parseFloat(value.cantidad).toFixed(3) * parseFloat(value.price).toFixed(3)
+                setResultado([...resultado, value])
                 resetForm()
                 let d = new Date()
                 value.date = d.toUTCString()
-
-                fetch('/api/producto_precio', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        product_id: value.id_producto.id,
-                        tarifa_id: id_tarifa.current,
-                    })
-                }).then(
-                    response => { return response.json() }
-                ).then(
-                    data => {
-                        precio_total.current = precio_total.current + (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
-                        value.price = data.fixed_price
-                        value.total_price = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
-                        setResultado([...resultado, value])
-                        console.log(resultado)
-                    }
-                )
+                console.log(value)
+                 
+                // fetch('/api/producto_precio', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //     },
+                //     body: JSON.stringify({
+                //         product_id: value.id_producto.id,
+                //         tarifa_id: id_tarifa.current,
+                //     })
+                // }).then(
+                //     response => { return response.json() }
+                // ).then(
+                //     data => {
+                //         precio_total.current = precio_total.current + (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
+                //         value.price = data.fixed_price
+                //         value.total_price = (parseFloat(data.fixed_price) * parseFloat(value.cantidad))
+                //         setResultado([...resultado, value])
+                //         console.log(resultado)
+                //     }
+                // )
                 if (resultado.length + 1 > 0) {
                     valido.current = true
                 }
@@ -120,7 +114,7 @@ const Seleccion = () => {
                             id_tarifa={id_tarifa}
                             resultado={resultado}
                             setResultado={setResultado}
-                            precio_total={precio_total}
+                            setProductos={setProductos}
                         />
                         <Caja title="Nuevo Producto">
                             <form onSubmit={formik.handleSubmit}>
@@ -151,12 +145,18 @@ const Seleccion = () => {
                                                     'id_producto',
                                                     newValue
                                                 )
+                                                formik.setFieldValue(
+                                                    'price',
+                                                    newValue.fixed_price
+                                                )
+                                                console.log(newValue)
                                             }}
                                             onInputChange={(event, newInputValue) => {
                                                 formik.setFieldValue(
                                                     'producto',
                                                     newInputValue
                                                 )
+                                                // console.log(newInputValue)
                                             }}
                                         />
                                     </Grid>
@@ -208,7 +208,7 @@ const Seleccion = () => {
                 </Caja>
                 <Grid item>
                     <Typography>
-                        Precio Total: {precio_total.current}
+                        Precio Total: <NumberFormat value={precio_total.current} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/>
                     </Typography>
                 </Grid>
             </Grid>

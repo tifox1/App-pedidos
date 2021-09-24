@@ -11,6 +11,7 @@ import CheckIcon from '@material-ui/icons/Check'
 import { useHistory } from "react-router";
 import Caja from '../Templates/Caja';
 
+
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
 }
@@ -21,6 +22,7 @@ const Tarifa = (props) => {
     const cookies = new Cookies()
     const [message, setMessage] = useState(false)
     const tarifa_listado = useRef([])
+    const [tarifa, setTarifa] = useState([])
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return
@@ -45,7 +47,9 @@ const Tarifa = (props) => {
             response => { return response.json() }
         ).then(
             data => {
-                tarifa_listado.current = data.resultado
+                console.log(data.resultado)
+                setTarifa(data.resultado)
+                // tarifa_listado.current = data.resultado
                 // tarifa_listado.current = data.resultado
                 // console.log(tarifa_listado.current)
             }
@@ -98,16 +102,35 @@ const Tarifa = (props) => {
                                     <Autocompletado
                                         error={formik.errors.tarifa}
                                         name="Tarifa"
-                                        options={tarifa_listado.current}
+                                        options={tarifa}
                                         title="Tarifa"
                                         inputValue={formik.values.tarifa}
                                         disableClearable
                                         onInputChange={(event, newValue) => {
                                             formik.setFieldValue('tarifa', newValue)
+                                            // console.log(newValue)
                                         }}
                                         onChange={(event, newValue) => {
                                             formik.setFieldValue('id_tarifa', newValue.id)
                                             props.id_tarifa.current = newValue.id
+                                            console.log(newValue)
+
+                                            fetch('/api/producto_listado', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({
+                                                    tarifa_id: newValue.id,
+                                                })
+                                            }).then(
+                                                response => { return response.json() }
+                                            ).then(
+                                                data => {
+                                                    console.log(data.resultado)
+                                                    props.setProductos(data.resultado)
+                                                }
+                                            )
                                         }}
                                     />
                                 </Grid>
