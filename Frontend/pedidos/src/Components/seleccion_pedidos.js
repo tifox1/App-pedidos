@@ -49,7 +49,7 @@ const Seleccion = () => {
             price:'',
         },
         onSubmit: (value, { resetForm }) => {
-            if (id_tarifa.current != null) {
+            if (resultado != null) {
                 precio_total.current = precio_total.current + (value.price * value.cantidad)
                 value.total_price = parseFloat(value.cantidad).toFixed(3) * parseFloat(value.price).toFixed(3)
                 setResultado([...resultado, value])

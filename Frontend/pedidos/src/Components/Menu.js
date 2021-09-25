@@ -20,7 +20,7 @@ const Menu = () => {
     const cookies = new Cookies()
     const history = useHistory()
     const [cabecera, setCabecera] = useState([])
-    const [lineas, setLineas] = useState([])
+
 
     useEffect(() => {
         if (!cookies.get('usuario')) {
@@ -38,9 +38,8 @@ const Menu = () => {
             response => { return response.json() }
         ).then(
             data => {
-                // console.log(data)
-                setCabecera(data.cabecera)
-                setLineas(data.lineas)
+                console.log(data)
+                setCabecera(data.resultado)
             }
         )
     }, [])
@@ -79,7 +78,6 @@ const Menu = () => {
                                             <LineaHistorial
                                                 key={res.id}
                                                 cabecera={res}
-                                                lineas={lineas}
                                             />
                                         )
                                     }

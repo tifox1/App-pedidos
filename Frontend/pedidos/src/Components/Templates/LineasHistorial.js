@@ -1,5 +1,5 @@
 import { IconButton, TableCell, TableRow } from '@material-ui/core'
-import React, { useState, useEffect} from 'react'
+import React, { useState, useEffect } from 'react'
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
 import CollapseLine from './Collapse';
@@ -33,43 +33,11 @@ const LineaHistorial = (props) => {
             <TableCell align="right">{props.cabecera.state}</TableCell>
         </TableRow>
         <CollapseLine
-            rows={props.lineas}
+            rows={props.cabecera.lines}
+            open={open}
         />
-        
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            {/* <TableRow key={props.key}>
-            <TableCell>{props.item.name}</TableCell>
-            <TableCell><NumberFormat value={parseFloat(props.item.amount_total)} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
-            <TableCell>{props.item.currency_id}</TableCell>
-            <TableCell>{props.item.state}</TableCell>
-        </TableRow> */}
-        </>)
+    </>)
 }
 
-        export default LineaHistorial
+export default LineaHistorial

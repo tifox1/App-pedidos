@@ -28,12 +28,12 @@ const CollapseLine = (props) => {
                                 </TableHead>
                                 <TableBody>
                                     {props.rows.map((Row) => (
-                                        <TableRow key={Row.date}>
+                                        <TableRow key={Row.id}>
                                             <TableCell component="th" scope="row">
-                                                {Row.date}
+                                                {Row.product_id}
                                             </TableCell>
-                                            <TableCell>{Row.customerId}</TableCell>
-                                            <TableCell align="right">{Row.amount}</TableCell>
+                                            <TableCell><NumberFormat value={Row.product_uom_qty} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
+                                            <TableCell align="right"><NumberFormat value={Row.price_unit} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>

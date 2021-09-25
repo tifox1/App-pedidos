@@ -198,7 +198,7 @@ def historial_lineas(id):
         'search_read',  # Buscar y leer
         [[['order_id', '=', id]]],  # Condición
         {
-            'fields': ['product_uom_qty', 'product_id','price_unit'],
+            'fields': ['id','product_uom_qty', 'product_id','price_unit'],
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -282,31 +282,26 @@ def pedidos_historial():
     datos= json.loads(request.data)
     queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
     if len(queries) > 0:
-        for index in queries:
+        for numpos, index in enumerate(queries):
             consulta_cabecera= historial_cabecera(index.id)
+            print(numpos, consulta_cabecera)
             consulta_linea= historial_lineas(index.id)
             cabecera.append({
                 'id': index.id,
                 'name': index.nombre, 
                 'state': consulta_cabecera[0].get('state'),
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
-                'amount_total': index.precio_total
+                'amount_total': index.precio_total,
+                'lines': [{
+                    'product_uom_qty': line.get('product_uom_qty'),
+                    'product_id': line.get('product_id')[1],
+                    'price_unit': line.get('price_unit'),
+                    'id': line.get('id')
+                } for line in consulta_linea]
             })
-            for line in consulta_linea:
-                
-                collapse_line.append(
-                    {
-                        'product_uom_qty': line.get('product_uom_qty'),
-                        'product_id': line.get('product_id')[1],
-                        'price_unit': line.get('price_unit')
-                    }
-                )
-            cabecera[]
-            
 
-
-
-        return jsonify({'resultado':[]})
+        print(cabecera)
+        return jsonify({'resultado':cabecera})
     return '', 405
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
