@@ -10,17 +10,29 @@ import Autocompletado from '../Templates/Autocompletado';
 import CheckIcon from '@material-ui/icons/Check'
 import { useHistory } from "react-router";
 import Caja from '../Templates/Caja';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Backdrop from '@material-ui/core/Backdrop';
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles((theme) => ({
+    backdrop: {
+        zIndex: theme.zIndex.drawer + 1,
+        color: '#fff',
+    },
+}));
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
 }
 
 const Tarifa = (props) => {
-
+    const classes = useStyles()
     const history = useHistory()
     const cookies = new Cookies()
     const [message, setMessage] = useState(false)
     const tarifa_listado = useRef([])
+    const [tarifa, setTarifa] = useState([])
+    const [open, setOpen] = useState(false)
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return
@@ -45,13 +57,16 @@ const Tarifa = (props) => {
             response => { return response.json() }
         ).then(
             data => {
-                tarifa_listado.current = data.resultado
+                console.log(data.resultado)
+                setTarifa(data.resultado)
+                // tarifa_listado.current = data.resultado
                 // tarifa_listado.current = data.resultado
                 // console.log(tarifa_listado.current)
             }
         )
+
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    },[])
+    }, [])
 
     const formik = useFormik({
         initialValues: {
@@ -89,6 +104,9 @@ const Tarifa = (props) => {
 
     return (
         <>
+            <Backdrop className={classes.backdrop} open={open} >
+                <CircularProgress color="inherit" />
+            </Backdrop>
             <Caja>
                 <form onSubmit={formik.handleSubmit}>
                     <Grid container spacing={2}>
@@ -98,16 +116,42 @@ const Tarifa = (props) => {
                                     <Autocompletado
                                         error={formik.errors.tarifa}
                                         name="Tarifa"
-                                        options={tarifa_listado.current}
+                                        options={tarifa}
                                         title="Tarifa"
                                         inputValue={formik.values.tarifa}
                                         disableClearable
                                         onInputChange={(event, newValue) => {
                                             formik.setFieldValue('tarifa', newValue)
+                                            // console.log(newValue)
                                         }}
                                         onChange={(event, newValue) => {
+                                            setOpen(true)
                                             formik.setFieldValue('id_tarifa', newValue.id)
                                             props.id_tarifa.current = newValue.id
+                                            console.log(newValue)
+
+                                            fetch('/api/producto_listado', {
+                                                method: 'POST',
+                                                headers: {
+                                                    'Content-Type': 'application/json',
+                                                },
+                                                body: JSON.stringify({
+                                                    tarifa_id: newValue.id,
+                                                })
+                                            }).then(
+                                                response => {
+                                                    return response.json()
+                                                }
+                                            ).then(
+                                                data => {
+                                                    console.log(data.resultado)
+                                                    props.setProductos(data.resultado)
+                                                }
+                                            ).then(
+                                                e => {
+                                                    setOpen(false)
+                                                }
+                                            )
                                         }}
                                     />
                                 </Grid>
@@ -117,13 +161,13 @@ const Tarifa = (props) => {
                                         color="primary"
                                         variant="contained"
                                         endIcon={<CheckIcon />}
-                                        disabled={!props.valido.current}
+                                        disabled={!props.valido}
                                     >
                                         Confirmar
                                     </Button>
                                 </Grid>
                             </Grid>
-                    
+
                         </Grid>
                     </Grid>
 

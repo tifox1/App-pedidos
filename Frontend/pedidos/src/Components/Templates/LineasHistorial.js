@@ -1,16 +1,42 @@
 import { IconButton, TableCell, TableRow } from '@material-ui/core'
-import React from 'react'
-import DeleteIcon from '@material-ui/icons/Delete';
+import React, { useState, useEffect } from 'react'
+import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@material-ui/icons/KeyboardArrowUp';
+import CollapseLine from './Collapse';
+import NumberFormat from "react-number-format";
 
 const LineaHistorial = (props) => {
-    console.log(props.item.producto)
+    const [open, setOpen] = useState(false)
+    // console.log(props.lineas)
+    // useEffect(
+    //     () = {
+
+    //     }
+    // ,[])
     return (<>
-        <TableRow key={props.key}>
-            <TableCell>{props.item.name}</TableCell>
-            <TableCell>{props.item.amount_total}</TableCell>
-            <TableCell>{props.item.currency_id}</TableCell>
-            <TableCell>{props.item.state}</TableCell>
+
+        <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+            <TableCell>
+                <IconButton
+                    aria-label="expand row"
+                    size="small"
+                    onClick={() => setOpen(!open)}
+                >
+                    {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+                </IconButton>
+            </TableCell>
+            <TableCell component="th" scope="row">
+                {props.cabecera.name}
+            </TableCell>
+            <TableCell align="right">{props.cabecera.amount_total}</TableCell>
+            <TableCell align="right">{props.cabecera.currency_id}</TableCell>
+            <TableCell align="right">{props.cabecera.state}</TableCell>
         </TableRow>
+        <CollapseLine
+            rows={props.cabecera.lines}
+            open={open}
+        />
+
     </>)
 }
 

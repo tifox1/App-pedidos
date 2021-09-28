@@ -107,9 +107,7 @@ def consulta_linea(id):
 
 
 def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
-    ''' 
-    revisar impuestos
-    '''
+
     product_odoo = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
@@ -120,6 +118,7 @@ def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
         ]],
         {'fields': ['display_name', 'id']}
     )
+    print(product_odoo)
     id = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
@@ -152,14 +151,14 @@ def create_cabecera(id_cliente, id_tarifa):
     )
     return id
 
-def producto(campo):
+def producto(id):
     contenido_odoo = prox.execute_kw(
         config['odoo']['db_odoo'], uid, config['odoo']['password'],
-        'product.template',
+        'product.pricelist.item',
         'search_read',  # Buscar y leer
-        [[[campo, '=', True, ]]],  # Condición
+        [[['pricelist_id', '=', id],['product_tmpl_id', '!=', False]]],  # Condición
         {
-            'fields': ['name', 'id'],
+            'fields': ['product_tmpl_id','name', 'id', 'fixed_price'],
             'order': 'name',
         }  # Campos que va a traer
     )
@@ -179,7 +178,7 @@ def consulta_tarifa(user_id):
     )
     return contenido_odoo 
 
-def historial(id):
+def historial_cabecera(id):
     contenido_odoo = prox.execute_kw(
         config['odoo']['db_odoo'], uid, config['odoo']['password'],
         'sale.order',
@@ -191,6 +190,21 @@ def historial(id):
         }  # Campos que va a traer
     )
     return contenido_odoo 
+
+def historial_lineas(id):
+    resultado = prox.execute_kw(
+        config['odoo']['db_odoo'], uid, config['odoo']['password'],
+        'sale.order.line',
+        'search_read',  # Buscar y leer
+        [[['order_id', '=', id]]],  # Condición
+        {
+            'fields': ['id','product_uom_qty', 'product_id','price_unit'],
+            'order': 'name',
+            'limit': 5
+        }  # Campos que va a traer
+    )
+    return resultado
+
 
 def consulta_precio(product_id, tarifa_id):
 
@@ -232,8 +246,10 @@ def usuario_validacion():
 def producto_listado():
     datos= json.loads(request.data)
     lista = list()
-    for i in producto(datos.get('odoo_field')):
-        lista.append({'title': i.get('name'), 'id': i.get('id')})
+    # print(datos)
+    for i in producto(datos.get('tarifa_id')):
+        lista.append({'title': i.get('name'), 'id': i.get('product_tmpl_id'), 'fixed_price': i.get('fixed_price')})
+    # print(lista)
     return jsonify({'resultado': lista})
 
 
@@ -260,37 +276,50 @@ def producto_precio():
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------
 @app.route('/api/pedidos_historial', methods=['POST', 'GET'])
 def pedidos_historial():
-    lista = list()
+    resultado = list() 
+    cabecera = list()
+    collapse_line = list()
     datos= json.loads(request.data)
     queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
     if len(queries) > 0:
-        print(historial(7949))
-        for index in queries:
-            consulta_odoo= historial(index.id)
-            lista.append({
+        for numpos, index in enumerate(queries):
+            consulta_cabecera= historial_cabecera(index.id)
+            print(numpos, consulta_cabecera)
+            consulta_linea= historial_lineas(index.id)
+            cabecera.append({
                 'id': index.id,
                 'name': index.nombre, 
-                'state': consulta_odoo[0].get('state'),
-                'currency_id': consulta_odoo[0]['currency_id'][1],
-                'amount_total': index.precio_total
+                'state': consulta_cabecera[0].get('state'),
+                'currency_id': consulta_cabecera[0]['currency_id'][1],
+                'amount_total': index.precio_total,
+                'lines': [{
+                    'product_uom_qty': line.get('product_uom_qty'),
+                    'product_id': line.get('product_id')[1],
+                    'price_unit': line.get('price_unit'),
+                    'id': line.get('id')
+                } for line in consulta_linea]
             })
-        return jsonify(lista)
+
+        print(cabecera)
+        return jsonify({'resultado':cabecera})
     return '', 405
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
 def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
+        print(datos)
+
         # guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
             datos['tarifa']
         )
-
+        print(datos['formulario'])
         for i in datos['formulario']:
             create_linea(
                 int(id_cabecera),
-                int(i.get('id_producto')['id']),
+                int(i.get('id_producto')['id'][0]),
                 int(i.get('cantidad')),
                 float(i.get('total_price')),
                 float(i.get('price'))
