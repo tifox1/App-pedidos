@@ -13,6 +13,8 @@ import Caja from '../Templates/Caja';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Backdrop from '@material-ui/core/Backdrop';
 import { makeStyles } from '@material-ui/core/styles';
+import { FormHelperText } from '@material-ui/core'
+
 
 const useStyles = makeStyles((theme) => ({
     backdrop: {
@@ -33,6 +35,7 @@ const Tarifa = (props) => {
     const tarifa_listado = useRef([])
     const [tarifa, setTarifa] = useState([])
     const [open, setOpen] = useState(false)
+
     const handleClose = (event, reason) => {
         if (reason === 'clickaway') {
             return
@@ -76,6 +79,7 @@ const Tarifa = (props) => {
         onSubmit: (value, { resetForm }) => {
             let d = new Date()
             value.date = d.toUTCString()
+            setMessage(true)
             fetch('/api/pedidos_create', {
                 method: 'POST',
                 headers: {
@@ -93,7 +97,6 @@ const Tarifa = (props) => {
                 }
             )
             resetForm()
-            setMessage(true)
             props.setResultado([])
             history.push('/menu')
         },
@@ -105,6 +108,7 @@ const Tarifa = (props) => {
     return (
         <>
             <Backdrop className={classes.backdrop} open={open} >
+
                 <CircularProgress color="inherit" />
             </Backdrop>
             <Caja>
@@ -154,6 +158,8 @@ const Tarifa = (props) => {
                                             )
                                         }}
                                     />
+                                    <FormHelperText>Seleccione primero la tarifa</FormHelperText>
+
                                 </Grid>
                                 <Grid item xs={12} sm={12}>
                                     <Button

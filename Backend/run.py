@@ -118,7 +118,6 @@ def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
         ]],
         {'fields': ['display_name', 'id']}
     )
-    print(product_odoo)
     id = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
@@ -246,10 +245,9 @@ def usuario_validacion():
 def producto_listado():
     datos= json.loads(request.data)
     lista = list()
-    # print(datos)
+    # print(producto(26))
     for i in producto(datos.get('tarifa_id')):
-        lista.append({'title': i.get('name'), 'id': i.get('product_tmpl_id'), 'fixed_price': i.get('fixed_price')})
-    # print(lista)
+        lista.append({'title': i.get('product_tmpl_id')[1], 'id': i.get('product_tmpl_id')[0], 'fixed_price': i.get('fixed_price')})
     return jsonify({'resultado': lista})
 
 
@@ -284,7 +282,6 @@ def pedidos_historial():
     if len(queries) > 0:
         for numpos, index in enumerate(queries):
             consulta_cabecera= historial_cabecera(index.id)
-            print(numpos, consulta_cabecera)
             consulta_linea= historial_lineas(index.id)
             cabecera.append({
                 'id': index.id,
@@ -300,7 +297,6 @@ def pedidos_historial():
                 } for line in consulta_linea]
             })
 
-        print(cabecera)
         return jsonify({'resultado':cabecera})
     return '', 405
 
@@ -309,17 +305,16 @@ def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
         print(datos)
-
         # guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
             datos['tarifa']
         )
-        print(datos['formulario'])
+
         for i in datos['formulario']:
             create_linea(
                 int(id_cabecera),
-                int(i.get('id_producto')['id'][0]),
+                int(i.get('id_producto')['id']),
                 int(i.get('cantidad')),
                 float(i.get('total_price')),
                 float(i.get('price'))

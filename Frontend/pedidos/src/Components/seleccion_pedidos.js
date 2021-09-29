@@ -93,10 +93,10 @@ const Seleccion = () => {
         precio_total.current = precio_total.current - deleteItem.total_price
         const newResultado = resultado.filter(res => res.date !== deleteItem.date)
         setResultado(newResultado)
-        if (resultado.length > 0) {
-            valido.current = true
+        if (resultado.length - 1 > 0) {
+            setValido(true)
         } else {
-            valido.current = false
+            setValido(false)
         }
         console.log(precio_total.current)
     }
