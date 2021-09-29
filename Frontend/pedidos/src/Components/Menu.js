@@ -64,7 +64,7 @@ const Menu = () => {
                 <CircularProgress color="inherit" />
             </Backdrop>
             <NavBar />
-            <Grid container spacing={2}>
+            <Grid container spacing={3}>
 
                 <Grid item
                     xs={12}
