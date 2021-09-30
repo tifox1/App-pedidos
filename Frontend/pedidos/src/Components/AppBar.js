@@ -1,8 +1,11 @@
-import { AppBar, makeStyles, Toolbar, Typography } from '@material-ui/core'
+import { AppBar, Box, Breadcrumbs, Button, Fab, Grid, IconButton, makeStyles, Toolbar, Typography, useTheme } from '@material-ui/core'
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import React from 'react'
 import Cookies from 'universal-cookie';
 import { useHistory } from 'react-router';
+import AddIcon from '@material-ui/icons/Add';
+import { red } from '@material-ui/core/colors';
+
 const usoStyles = makeStyles((theme) => ({
     root: {
         flexGrow: 1,
@@ -35,14 +38,12 @@ const NavBar = (props) => {
         history.push('/login')
     }
     return (<>
-        <AppBar className={classes.root} position="static">
+        <AppBar position="static" elevation={0}>
             <Toolbar>
                 <Typography className={classes.title} variant="h6" noWrap>
                     Pedidos
                 </Typography>
-                <button onClick={handleClick}>
-                    <ExitToApp />
-                </button>
+                <IconButton onClick={handleClick}><ExitToApp /></IconButton>
             </Toolbar>
         </AppBar>
     </>)

@@ -6,7 +6,7 @@ import Grid from '@material-ui/core/Grid'
 import MuiAlert from '@material-ui/lab/Alert'
 import Snackbar from '@material-ui/core/Snackbar'
 import TextField from '@material-ui/core/TextField'
-import { Button, Table, TableBody, TableCell, TableHead, TableContainer, Typography } from '@material-ui/core'
+import { Button, Table, TableBody, TableCell, TableHead, TableContainer, Typography, Fab, useTheme } from '@material-ui/core'
 import Autocompletado from './Templates/Autocompletado'
 import { FormHelperText } from '@material-ui/core'
 import Caja from './Templates/Caja'
@@ -16,8 +16,8 @@ import LineaPedido from './LineasPedido'
 import { useHistory } from "react-router";
 import Tarifa from './seleccion_pedido_components/Tarifa';
 import NumberFormat from "react-number-format";
-
-
+import SubMenu from './SubMenu';
+import CheckIcon from '@material-ui/icons/Check'
 
 function Alert(props) {
     return <MuiAlert elevation={6} variant="filled" {...props} />
@@ -32,15 +32,6 @@ const Seleccion = () => {
     const id_tarifa = useRef(null)
     const [valido, setValido] = useState(false)
     const precio_total = useRef(0)
-
-
-    useEffect(() => {
-        if (!cookies.get('usuario')) {
-            history.push('/login')
-        }
-
-    }, [])
-
 
     const formik = useFormik({
         initialValues: {
@@ -100,10 +91,23 @@ const Seleccion = () => {
         }
         console.log(precio_total.current)
     }
+    const theme = useTheme()
 
     return (
         <>
             <NavBar />
+            <SubMenu breadCrumbs={[
+                ['Pedidos realizados', '/'],
+                ['Nuevo']
+            ]}
+            a="s">
+                <Fab size="small" variant="extended" color="primary">
+                    <CheckIcon/> Confirmar
+                </Fab>
+                <Button style={{left: theme.spacing(1)}}>
+                    cancelar
+                </Button>
+            </SubMenu>
             <Grid container>
                 <Caja title="Nuevo pedido" padding={2}>
                     <Grid container alignItems="stretch" spacing={2}>

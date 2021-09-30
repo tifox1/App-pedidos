@@ -48,7 +48,7 @@ const Login = (props) => {
     useEffect(
         ()=>{
             if(cookies.get('usuario')){
-                history.push('/menu')
+                history.push('/')
             }
             // eslint-disable-next-line react-hooks/exhaustive-deps
         },[])
@@ -78,7 +78,6 @@ const Login = (props) => {
                 })
             }).then(response => {
                 setBackdrop(false)
-                // console.log(response)
                 if (response.ok){
                     return response.json()
                 } else if (response.status === 400) {
@@ -90,11 +89,9 @@ const Login = (props) => {
                     return false
                 }
             }).then(data => {
-                console.log(data)
                 if (data) {
-                    console.log(data)
                     cookies.set('usuario', data, {path: '/'})
-                    history.push('/menu')
+                    history.push('/')
                 }
             }).catch(e => {
                 if (e.name === 'TypeError') {
@@ -114,7 +111,7 @@ const Login = (props) => {
         <AppBar className={classes.root} position="static">
             <Toolbar>
                 <Typography className={classes.title} variant="h6" noWrap>
-                    Contacto Clientes
+                    Pedidos
                 </Typography>
             </Toolbar>
         </AppBar>

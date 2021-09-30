@@ -45,9 +45,6 @@ const Tarifa = (props) => {
 
 
     useEffect(() => {
-        if (!cookies.get('usuario')) {
-            history.push('/login')
-        }
         fetch('/api/tarifa_listado', {
             method: 'POST',
             headers: {
@@ -98,7 +95,7 @@ const Tarifa = (props) => {
             )
             resetForm()
             props.setResultado([])
-            history.push('/menu')
+            history.push('/')
         },
         validationSchema: yup.object({
             // tarifa: yup.string().required("Este campo es obligatorio"),
