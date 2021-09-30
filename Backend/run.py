@@ -83,7 +83,7 @@ def consulta_cabecera(id):
         'search_read',  # Buscar y leer
         [[['id', '=', id]]],  # Condición
         {
-            'fields': ['name', 'pricelist_id', 'partner_id', 'id', 'amount_total'],
+            'fields': ['name', 'pricelist_id', 'partner_id', 'id', 'amount_total', 'comment_sale_auto'],
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -137,7 +137,7 @@ def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
     )
 
 
-def create_cabecera(id_cliente, id_tarifa):
+def create_cabecera(id_cliente, id_tarifa, comentario):
     id = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
@@ -145,7 +145,8 @@ def create_cabecera(id_cliente, id_tarifa):
         'sale.order',
         'create', [{
             'partner_id': int(id_cliente),
-            'pricelist_id': int(id_tarifa)
+            'pricelist_id': int(id_tarifa),
+            'comment_sale_auto': comentario
         }]
     )
     return id
@@ -289,6 +290,7 @@ def pedidos_historial():
                 'state': consulta_cabecera[0].get('state'),
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
                 'amount_total': index.precio_total,
+                'comment': index.comentario,
                 'lines': [{
                     'product_uom_qty': line.get('product_uom_qty'),
                     'product_id': line.get('product_id')[1],
@@ -308,7 +310,8 @@ def pedidos_create():
         # guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
-            datos['tarifa']
+            datos['tarifa'],
+            datos['comentario'],
         )
 
         for i in datos['formulario']:
@@ -327,7 +330,8 @@ def pedidos_create():
                 nombre=index.get('name'),
                 id_usuario=index.get('partner_id')[0],
                 tarifa=index.get('pricelist_id')[0],
-                precio_total= index.get('amount_total')
+                precio_total= index.get('amount_total'),
+                comentario = index.get('comment_sale_auto')
             )
             db.session.add(model_cabecera)
             db.session.commit()
