@@ -38,6 +38,7 @@ const Menu = () => {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'x-access-token': cookies.get('usuario')['usuario']['token']
             },
             body: JSON.stringify({
                 id_usuario: cookies.get('usuario').usuario.id
@@ -77,6 +78,7 @@ const Menu = () => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell />
+                                    <TableCell>Fecha</TableCell>
                                     <TableCell>Nombre</TableCell>
                                     <TableCell align="right">Precio Total</TableCell>
                                     <TableCell align="right">Tipo de tarifa</TableCell>

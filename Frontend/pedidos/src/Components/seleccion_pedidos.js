@@ -99,9 +99,13 @@ const Seleccion = () => {
             <SubMenu breadCrumbs={[
                 ['Pedidos realizados', '/'],
                 ['Nuevo']
-            ]}
-            a="s">
-                <Fab size="small" variant="extended" color="primary">
+            ]}>
+                <Fab
+                    size="small"
+                    variant="extended"
+                    color="primary"
+                    disabled={true}
+                >
                     <CheckIcon/> Confirmar
                 </Fab>
                 <Button style={{left: theme.spacing(1)}}>
