@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from datetime import datetime
 from flask import Flask, json, jsonify
 from flask.blueprints import Blueprint
 from flask.helpers import url_for
@@ -16,6 +17,8 @@ from flask_login import LoginManager, current_user, login_user, logout_user
 from xmlrpc import client
 from flask_bootstrap import Bootstrap
 import logging
+import jwt
+from functools import wraps
 
 from admin import admin_page, admin
 from models import db
@@ -83,7 +86,7 @@ def consulta_cabecera(id):
         'search_read',  # Buscar y leer
         [[['id', '=', id]]],  # Condición
         {
-            'fields': ['name', 'pricelist_id', 'partner_id', 'id', 'amount_total'],
+            'fields': ['name', 'pricelist_id', 'partner_id', 'id', 'amount_total', 'comment_sale_auto'],
             'order': 'name',
             'limit': 5
         }  # Campos que va a traer
@@ -137,7 +140,7 @@ def create_linea(id, id_producto, cantidad, precio_total, precio_unitario):
     )
 
 
-def create_cabecera(id_cliente, id_tarifa):
+def create_cabecera(id_cliente, id_tarifa, comentario):
     id = prox.execute_kw(
         config['odoo']['db_odoo'],
         uid,
@@ -145,7 +148,8 @@ def create_cabecera(id_cliente, id_tarifa):
         'sale.order',
         'create', [{
             'partner_id': int(id_cliente),
-            'pricelist_id': int(id_tarifa)
+            'pricelist_id': int(id_tarifa),
+            'comment_sale_auto': comentario
         }]
     )
     return id
@@ -220,6 +224,18 @@ def consulta_precio(product_id, tarifa_id):
     return contenido_odoo
 
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get()
+        if not token:
+            return jsonify({'mensaje':'token invalido'}), 403
+        try:
+            data = jwt.decode(token,app.config['SECRET_KEY'])
+        except:
+            return jsonify({'mensaje': 'token valido'}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route('/api/usuario_validacion/', methods=['GET', 'POST'])
 def usuario_validacion():
@@ -229,8 +245,13 @@ def usuario_validacion():
         contrasenia=str(datos.get('contrasenia')),
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
+        token = jwt.encode(
+            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + datetime.timedelta(hours = 24)}, 
+            app.config['SECRET_KEY']
+        )
         return {
             'usuario': { 
+                'token': token,
                 'id': query_datos[0].partner_id,
                 'name': query_datos[0].nombre,
                 'odoo_field':query_datos[0].campo_odoo
@@ -239,9 +260,11 @@ def usuario_validacion():
 
     return '', 400
 
+
 # ----------------------------------------------------------------------Productos--------------------------------------------------------------------------------------------
 
 @app.route('/api/producto_listado', methods=['POST'])
+@token_required
 def producto_listado():
     datos= json.loads(request.data)
     lista = list()
@@ -252,6 +275,7 @@ def producto_listado():
 
 
 @app.route('/api/tarifa_listado', methods=['POST'])
+@token_required
 def tarifa_listado():
     datos = json.loads(request.data)
     lista = list()
@@ -261,6 +285,7 @@ def tarifa_listado():
 
 
 @app.route('/api/producto_precio', methods=['POST'])
+@token_required
 def producto_precio():
     if request.method == 'POST':
         datos = json.loads(request.data)
@@ -273,6 +298,7 @@ def producto_precio():
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------
 @app.route('/api/pedidos_historial', methods=['POST', 'GET'])
+@token_required
 def pedidos_historial():
     resultado = list() 
     cabecera = list()
@@ -289,6 +315,7 @@ def pedidos_historial():
                 'state': consulta_cabecera[0].get('state'),
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
                 'amount_total': index.precio_total,
+                'comment': index.comentario,
                 'lines': [{
                     'product_uom_qty': line.get('product_uom_qty'),
                     'product_id': line.get('product_id')[1],
@@ -301,6 +328,7 @@ def pedidos_historial():
     return '', 405
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
+@token_required
 def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
@@ -308,7 +336,8 @@ def pedidos_create():
         # guardar datos al odoo
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
-            datos['tarifa']
+            datos['tarifa'],
+            datos['comentario'],
         )
 
         for i in datos['formulario']:
@@ -327,7 +356,8 @@ def pedidos_create():
                 nombre=index.get('name'),
                 id_usuario=index.get('partner_id')[0],
                 tarifa=index.get('pricelist_id')[0],
-                precio_total= index.get('amount_total')
+                precio_total= index.get('amount_total'),
+                comentario = index.get('comment_sale_auto')
             )
             db.session.add(model_cabecera)
             db.session.commit()
