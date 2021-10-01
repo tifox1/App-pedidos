@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, json, jsonify
 from flask.blueprints import Blueprint
 from flask.helpers import url_for
@@ -19,7 +19,7 @@ from flask_bootstrap import Bootstrap
 import logging
 import jwt
 from functools import wraps
-
+from base64 import b64decode
 from admin import admin_page, admin
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
@@ -227,11 +227,13 @@ def consulta_precio(product_id, tarifa_id):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get()
+        token = request.headers.get('x-access-token')
+
         if not token:
             return jsonify({'mensaje':'token invalido'}), 403
         try:
-            data = jwt.decode(token,app.config['SECRET_KEY'])
+            data = jwt.decode(token,app.config['SECRET_KEY'], algorithms=['HS256'])
+            print(data)
         except:
             return jsonify({'mensaje': 'token valido'}), 403
         return f(*args, **kwargs)
@@ -246,11 +248,13 @@ def usuario_validacion():
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
         token = jwt.encode(
-            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + datetime.timedelta(hours = 24)}, 
-            app.config['SECRET_KEY']
+            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + timedelta(hours = 24)}, 
+            app.config['SECRET_KEY'],
+            'HS256'
         )
+
         return {
-            'usuario': { 
+            'usuario': {
                 'token': token,
                 'id': query_datos[0].partner_id,
                 'name': query_datos[0].nombre,
