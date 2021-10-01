@@ -316,6 +316,7 @@ def pedidos_historial():
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
                 'amount_total': index.precio_total,
                 'comment': index.comentario,
+                'date': index.fecha,
                 'lines': [{
                     'product_uom_qty': line.get('product_uom_qty'),
                     'product_id': line.get('product_id')[1],
