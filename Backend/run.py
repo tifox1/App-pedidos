@@ -227,7 +227,7 @@ def consulta_precio(product_id, tarifa_id):
 def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = request.headers.get()
+        token = request.headers.get('x-access-token')
         if not token:
             return jsonify({'mensaje':'token invalido'}), 403
         try:
