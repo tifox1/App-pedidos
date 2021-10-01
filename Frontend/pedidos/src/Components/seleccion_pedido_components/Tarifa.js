@@ -45,13 +45,11 @@ const Tarifa = (props) => {
 
 
     useEffect(() => {
-        if (!cookies.get('usuario')) {
-            history.push('/login')
-        }
         fetch('/api/tarifa_listado', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'x-access-token': cookies.get('usuario')['usuario']['token']
             },
             body: JSON.stringify({
                 user_id: cookies.get('usuario').usuario.id,
@@ -84,6 +82,7 @@ const Tarifa = (props) => {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-access-token': cookies.get('usuario')['usuario']['token']
                 },
                 body: JSON.stringify({
                     tarifa: props.id_tarifa.current,
@@ -98,7 +97,7 @@ const Tarifa = (props) => {
             )
             resetForm()
             props.setResultado([])
-            history.push('/menu')
+            history.push('/')
         },
         validationSchema: yup.object({
             // tarifa: yup.string().required("Este campo es obligatorio"),
@@ -138,6 +137,7 @@ const Tarifa = (props) => {
                                                 method: 'POST',
                                                 headers: {
                                                     'Content-Type': 'application/json',
+                                                    'x-access-token': cookies.get('usuario')['usuario']['token']
                                                 },
                                                 body: JSON.stringify({
                                                     tarifa_id: newValue.id,
