@@ -1,4 +1,5 @@
 from configparser import ConfigParser
+from datetime import datetime
 from flask import Flask, json, jsonify
 from flask.blueprints import Blueprint
 from flask.helpers import url_for
@@ -16,6 +17,8 @@ from flask_login import LoginManager, current_user, login_user, logout_user
 from xmlrpc import client
 from flask_bootstrap import Bootstrap
 import logging
+import jwt
+from functools import wraps
 
 from admin import admin_page, admin
 from models import db
@@ -221,6 +224,18 @@ def consulta_precio(product_id, tarifa_id):
     return contenido_odoo
 
 # ----------------------------------------------------------------------USUARIO-----------------------------------------------------------------------------------------------
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get()
+        if not token:
+            return jsonify({'mensaje':'token invalido'}), 403
+        try:
+            data = jwt.decode(token,app.config['SECRET_KEY'])
+        except:
+            return jsonify({'mensaje': 'token valido'}), 403
+        return f(*args, **kwargs)
+    return decorated
 
 @app.route('/api/usuario_validacion/', methods=['GET', 'POST'])
 def usuario_validacion():
@@ -230,8 +245,13 @@ def usuario_validacion():
         contrasenia=str(datos.get('contrasenia')),
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
+        token = jwt.encode(
+            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + datetime.timedelta(hours = 24)}, 
+            app.config['SECRET_KEY']
+        )
         return {
             'usuario': { 
+                'token': token,
                 'id': query_datos[0].partner_id,
                 'name': query_datos[0].nombre,
                 'odoo_field':query_datos[0].campo_odoo
@@ -240,9 +260,11 @@ def usuario_validacion():
 
     return '', 400
 
+
 # ----------------------------------------------------------------------Productos--------------------------------------------------------------------------------------------
 
 @app.route('/api/producto_listado', methods=['POST'])
+@token_required
 def producto_listado():
     datos= json.loads(request.data)
     lista = list()
@@ -253,6 +275,7 @@ def producto_listado():
 
 
 @app.route('/api/tarifa_listado', methods=['POST'])
+@token_required
 def tarifa_listado():
     datos = json.loads(request.data)
     lista = list()
@@ -262,6 +285,7 @@ def tarifa_listado():
 
 
 @app.route('/api/producto_precio', methods=['POST'])
+@token_required
 def producto_precio():
     if request.method == 'POST':
         datos = json.loads(request.data)
@@ -274,6 +298,7 @@ def producto_precio():
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------
 @app.route('/api/pedidos_historial', methods=['POST', 'GET'])
+@token_required
 def pedidos_historial():
     resultado = list() 
     cabecera = list()
@@ -303,6 +328,7 @@ def pedidos_historial():
     return '', 405
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
+@token_required
 def pedidos_create():
     if request.method == 'POST':
         datos = json.loads(request.data)
