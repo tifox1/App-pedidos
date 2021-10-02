@@ -1,10 +1,8 @@
-import { AppBar, Box, Breadcrumbs, Button, Fab, Grid, IconButton, makeStyles, Toolbar, Typography, useTheme } from '@material-ui/core'
+import { AppBar, IconButton, makeStyles, Toolbar, Typography } from '@material-ui/core'
 import ExitToApp from '@material-ui/icons/ExitToApp';
 import React from 'react'
 import Cookies from 'universal-cookie';
 import { useHistory } from 'react-router';
-import AddIcon from '@material-ui/icons/Add';
-import { red } from '@material-ui/core/colors';
 
 const usoStyles = makeStyles((theme) => ({
     root: {
@@ -29,7 +27,7 @@ const usoStyles = makeStyles((theme) => ({
 
 }));
 
-const NavBar = (props) => {
+const NavBar = ({hide}) => {
     const history = useHistory()
     const cookies = new Cookies()
     const classes = usoStyles()
@@ -43,7 +41,7 @@ const NavBar = (props) => {
                 <Typography className={classes.title} variant="h6" noWrap>
                     Pedidos
                 </Typography>
-                <IconButton onClick={handleClick}><ExitToApp /></IconButton>
+                {!hide && <IconButton onClick={handleClick}><ExitToApp /></IconButton>}
             </Toolbar>
         </AppBar>
     </>)

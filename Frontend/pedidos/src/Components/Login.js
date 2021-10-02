@@ -3,10 +3,6 @@ import React, { useState, useEffect } from 'react'
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import Cookies from 'universal-cookie';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-import { makeStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Box from '@material-ui/core/Box';
 import FormControl from '@material-ui/core/FormControl';
@@ -18,26 +14,10 @@ import { Collapse } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert'
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import NavBar from "./AppBar";
 
-const useStyles = makeStyles((theme) => ({
-    root: {
-        flexGrow: 1,
-        background: '#000',
-    },
-
-    title: {
-        flexGrow: 1,
-    },
-
-    divs: {
-        margin: "auto",
-    }
-
-}));
-
-const Login = (props) => {
+const Login = () => {
     const history = useHistory();
-    const classes = useStyles();
     const cookies = new Cookies()
     const [logged, setLogged] = useState(false)
     const [open, setOpen] = useState(false)
@@ -108,13 +88,7 @@ const Login = (props) => {
     })
 
     return (<>
-        <AppBar className={classes.root} position="static">
-            <Toolbar>
-                <Typography className={classes.title} variant="h6" noWrap>
-                    Pedidos
-                </Typography>
-            </Toolbar>
-        </AppBar>
+        <NavBar hide={true}/>
         <Backdrop
             open={backdrop}
             style={{zIndex: 200}}
@@ -167,7 +141,6 @@ const Login = (props) => {
                                 <Button variant="contained"
                                         type="submit"
                                         color="primary"
-                                        className={classes.margin}
                                         onClick={() => {setLogged(true)}}>
                                     Acceder
                                 </Button>
