@@ -312,15 +312,17 @@ def pedidos_historial():
     cabecera = list()
     collapse_line = list()
     datos = json.loads(request.data)
-
-    if 'end' or 'start' not in datos.keys():
+    print(datos)
+    if ('end' or 'start') not in datos.keys():
+        print('not end start')
         queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
     else:
+        print('end start')
         queries = PedidosCabecera.query.filter(
             PedidosCabecera.id_usuario == datos['id_usuario'],
-            PedidosCabecera.fecha <= datetime.strptime(datos['end'], "%d %b %Y"),
-            PedidosCabecera.fecha >= datetime.strptime(datos['start'], "%d %b %Y")
-        )
+            PedidosCabecera.fecha <= datetime.strptime(datos['end'], "%a, %d %b %Y %H:%M:%S %Z").date(),
+            PedidosCabecera.fecha >= datetime.strptime(datos['start'], "%a, %d %b %Y %H:%M:%S %Z").date()
+        ).all()
 
     if len(queries) > 0:
         for numpos, index in enumerate(queries):
@@ -333,7 +335,10 @@ def pedidos_historial():
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
                 'amount_total': index.precio_total,
                 'comment': index.comentario,
-                'date': index.fecha,
+                'date': datetime.strftime(
+                    index.fecha,
+                    '%d/%m/%Y'
+                ) if index.fecha else '',
                 'lines': [{
                     'product_uom_qty': line.get('product_uom_qty'),
                     'product_id': line.get('product_id')[1],
@@ -355,8 +360,7 @@ def pedidos_create():
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
             datos['tarifa'],
-            'DSFASDFLASDJF'
-            # datos['comentario'],
+            datos['comentario'],
         )
 
         for i in datos['formulario']:

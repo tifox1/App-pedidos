@@ -56,7 +56,6 @@ const Pedido = (props) => {
         } else {
             setValido(false)
         }
-        console.log(precioTotal)
     }
 
     const handleClose = (event, reason) => {
@@ -91,10 +90,8 @@ const Pedido = (props) => {
                 })
             }).then(response => {
                 if (response.ok) {
-                    console.log(valido)
                     setValido(false)
                     setMessage(true)
-                    console.log(valido)
                     resetForm()
                     history.push('/')
                 }
@@ -149,7 +146,6 @@ const Pedido = (props) => {
             response => { return response.json() }
         ).then(
             data => {
-                console.log(data.resultado)
                 setTarifa(data.resultado)
             }
         )
@@ -172,7 +168,10 @@ const Pedido = (props) => {
                 >
                     <CheckIcon/> Confirmar
                 </Fab>
-                <Button style={{left: theme.spacing(1)}}>
+                <Button
+                    style={{left: theme.spacing(1)}}
+                    onClick={() => history.push('/')}
+                >
                     cancelar
                 </Button>
             </SubMenu>
@@ -213,7 +212,6 @@ const Pedido = (props) => {
                                             return response.json()
                                         }
                                     ).then(data => {
-                                        console.log(data.resultado)
                                         setProductos(data.resultado)
                                     }).then(e => {
                                         setOpen(false)
@@ -226,7 +224,7 @@ const Pedido = (props) => {
                                 error={cabForm.errors.obs}
                                 label="Observación"
                                 variant="outlined"
-                                name="cantidad"
+                                name="obs"
                                 onChange={cabForm.handleChange}
                                 value={cabForm.values.obs}
                                 fullWidth
@@ -281,7 +279,6 @@ const Pedido = (props) => {
                                                             'price',
                                                             newValue.fixed_price
                                                         )
-                                                        console.log(newValue)
                                                     }}
                                                     onInputChange={(
                                                         event, newInputValue) => {

@@ -4,7 +4,6 @@ import React from 'react'
 
 const SubMenu = ({buttons, breadCrumbs, children}) => {
     const theme = useTheme()
-    console.log(children)
     return (<>
         <AppBar
             position="sticky" elevation={0}

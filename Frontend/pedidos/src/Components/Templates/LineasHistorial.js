@@ -7,7 +7,7 @@ import NumForm from '../NumForm'
 
 const LineaHistorial = (props) => {
     const [open, setOpen] = useState(false)
-    console.log(props);
+
     return (<>
 
         <TableRow>

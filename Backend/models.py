@@ -4,7 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import backref
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash
-import datetime
+from datetime import date, datetime
 db = SQLAlchemy()
 
 
@@ -26,7 +26,7 @@ class PedidosCabecera(db.Model):
     precio_total=db.Column(db.String)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.partner_id'))
     comentario = db.Column(db.String)
-    fecha= db.Column(db.Date(), default=datetime.datetime.today())
+    fecha = db.Column(db.Date(), default=date.today())
     pedidos_lineas = db.relationship('PedidosLineas')
 
 

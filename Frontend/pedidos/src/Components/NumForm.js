@@ -4,7 +4,7 @@ import React from 'react'
 const NumForm = ({children}) => {
     return (
         <NumberFormat
-            value={children}
+            value={Number(children)}
             displayType="text"
             thousandSeparator="."
             decimalSeparator=","
