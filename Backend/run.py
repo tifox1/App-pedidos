@@ -311,14 +311,17 @@ def pedidos_historial():
     resultado = list() 
     cabecera = list()
     collapse_line = list()
-    datos= json.loads(request.data)
+    datos = json.loads(request.data)
 
-    if not datos['end'] and datos['start']:
-        queries = PedidosCabecera.query.filter(id_usuario= datos['id_usuario']).filter(PedidosCabecera.fecha <= datetime.strptime(datos['end'], "%d %b %Y")).filter(PedidosCabecera.fecha >= datetime.strptime(datos['start'], "%d %b %Y"))
-    
-    else:
+    if 'end' or 'start' not in datos.keys():
         queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
-    
+    else:
+        queries = PedidosCabecera.query.filter(
+            PedidosCabecera.id_usuario == datos['id_usuario'],
+            PedidosCabecera.fecha <= datetime.strptime(datos['end'], "%d %b %Y"),
+            PedidosCabecera.fecha >= datetime.strptime(datos['start'], "%d %b %Y")
+        )
+
     if len(queries) > 0:
         for numpos, index in enumerate(queries):
             consulta_cabecera= historial_cabecera(index.id)
