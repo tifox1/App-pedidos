@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask import Flask, json, jsonify
 from flask.blueprints import Blueprint
 from flask.helpers import url_for
@@ -249,8 +249,10 @@ def usuario_validacion():
         contrasenia=str(datos.get('contrasenia')),
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
-        token = jwt.encode(
-            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + datetime.timedelta(hours = 24)}, 
+        token = jwt.encode({
+                'user': query_datos[0].nombre,
+                'exp': datetime.utcnow() + timedelta(hours = 24)
+            }, 
             app.config['SECRET_KEY']
         )
         return {
