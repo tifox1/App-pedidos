@@ -26,7 +26,7 @@ class PedidosCabecera(db.Model):
     precio_total=db.Column(db.String)
     id_usuario = db.Column(db.Integer, db.ForeignKey('usuario.partner_id'))
     comentario = db.Column(db.String)
-    fecha= db.Column(db.DateTime(), default=datetime.datetime.utcnow())
+    fecha= db.Column(db.Date(), default=datetime.datetime.today())
     pedidos_lineas = db.relationship('PedidosLineas')
 
 

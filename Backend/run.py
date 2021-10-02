@@ -1,5 +1,5 @@
 from configparser import ConfigParser
-from datetime import datetime, timedelta
+from datetime import datetime
 from flask import Flask, json, jsonify
 from flask.blueprints import Blueprint
 from flask.helpers import url_for
@@ -19,7 +19,7 @@ from flask_bootstrap import Bootstrap
 import logging
 import jwt
 from functools import wraps
-from base64 import b64decode
+
 from admin import admin_page, admin
 from models import db
 from models import Usuario, PedidosCabecera, PedidosLineas, User
@@ -228,12 +228,14 @@ def token_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         token = request.headers.get('x-access-token')
-
         if not token:
             return jsonify({'mensaje':'token invalido'}), 403
         try:
-            data = jwt.decode(token,app.config['SECRET_KEY'], algorithms=['HS256'])
-            print(data)
+            data = jwt.decode(
+                token,
+                app.config['SECRET_KEY'],
+                algorithms=['HS256']
+            )
         except:
             return jsonify({'mensaje': 'token valido'}), 403
         return f(*args, **kwargs)
@@ -248,13 +250,11 @@ def usuario_validacion():
     ).all()
     if len(query_datos) != 0 and len(query_datos) < 2:
         token = jwt.encode(
-            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + timedelta(hours = 24)}, 
-            app.config['SECRET_KEY'],
-            'HS256'
+            {'user': query_datos[0].nombre, 'exp': datetime.utcnow() + datetime.timedelta(hours = 24)}, 
+            app.config['SECRET_KEY']
         )
-
         return {
-            'usuario': {
+            'usuario': { 
                 'token': token,
                 'id': query_datos[0].partner_id,
                 'name': query_datos[0].nombre,
@@ -301,6 +301,8 @@ def producto_precio():
 
 
 # ----------------------------------------------------------------------PEDIDOS LINEAS - PEDIDOS CABECERA-----------------------------------------------------------------------------------
+
+
 @app.route('/api/pedidos_historial', methods=['POST', 'GET'])
 @token_required
 def pedidos_historial():
@@ -308,7 +310,7 @@ def pedidos_historial():
     cabecera = list()
     collapse_line = list()
     datos= json.loads(request.data)
-    queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
+    queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario'], fecha= datetime.strptime(datos['date'], "%d %b %Y")).all()
     if len(queries) > 0:
         for numpos, index in enumerate(queries):
             consulta_cabecera= historial_cabecera(index.id)
@@ -342,7 +344,8 @@ def pedidos_create():
         id_cabecera = create_cabecera(
             datos['usuario'][0].get('id_usuario').get('usuario').get('id'),
             datos['tarifa'],
-            datos['comentario'],
+            'DSFASDFLASDJF'
+            # datos['comentario'],
         )
 
         for i in datos['formulario']:
