@@ -312,26 +312,32 @@ def pedidos_historial():
     cabecera = list()
     collapse_line = list()
     datos = json.loads(request.data)
-    print(datos)
+
     if ('end' or 'start') not in datos.keys():
-        print('not end start')
-        queries = PedidosCabecera.query.filter_by(id_usuario= datos['id_usuario']).all()
+        queries = PedidosCabecera.query.filter_by(
+            id_usuario= datos['id_usuario']
+        ).all()
     else:
-        print('end start')
         queries = PedidosCabecera.query.filter(
             PedidosCabecera.id_usuario == datos['id_usuario'],
-            PedidosCabecera.fecha <= datetime.strptime(datos['end'], "%a, %d %b %Y %H:%M:%S %Z").date(),
-            PedidosCabecera.fecha >= datetime.strptime(datos['start'], "%a, %d %b %Y %H:%M:%S %Z").date()
+            PedidosCabecera.fecha <= datetime.strptime(
+                datos['end'],
+                "%a, %d %b %Y %H:%M:%S %Z"
+            ).date(),
+            PedidosCabecera.fecha >= datetime.strptime(
+                datos['start'],
+                "%a, %d %b %Y %H:%M:%S %Z"
+            ).date()
         ).all()
 
     if len(queries) > 0:
         for numpos, index in enumerate(queries):
-            consulta_cabecera= historial_cabecera(index.id)
-            consulta_linea= historial_lineas(index.id)
+            consulta_cabecera = historial_cabecera(index.id)
+            consulta_linea = historial_lineas(index.id)
             cabecera.append({
                 'id': index.id,
-                'name': index.nombre, 
-                'state': consulta_cabecera[0].get('state'),
+                'name': index.nombre,
+                'state': consulta_cabecera[0].get('state') if len(consulta_cabecera) != 0 else '-',
                 'currency_id': consulta_cabecera[0]['currency_id'][1],
                 'amount_total': index.precio_total,
                 'comment': index.comentario,
@@ -348,7 +354,7 @@ def pedidos_historial():
             })
 
         return jsonify({'resultado':cabecera})
-    return '', 405
+    return '', 400
 
 @app.route('/api/pedidos_create', methods=['POST', 'GET'])
 @token_required

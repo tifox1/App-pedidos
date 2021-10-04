@@ -1,26 +1,48 @@
 import React, { useEffect, useState } from 'react'
-import {Grid, Table, TableBody, TableCell, TableHead, Paper, Container, Box, Button} from '@material-ui/core'
+import {
+    Grid,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    Paper,
+    Container,
+    Box,
+    Button,
+    Typography,
+    Snackbar
+} from '@material-ui/core'
 import Cookies from 'universal-cookie'
 import NavBar from "./AppBar"
 import LineaHistorial from './Templates/LineasHistorial'
-import { useHistory } from "react-router-dom";
-import TableContainer from '@material-ui/core/TableContainer';
-import TableRow from '@material-ui/core/TableRow';
-import AddIcon from '@material-ui/icons/Add';
+import { useHistory, useLocation } from "react-router-dom"
+import TableContainer from '@material-ui/core/TableContainer'
+import TableRow from '@material-ui/core/TableRow'
+import AddIcon from '@material-ui/icons/Add'
 import SubMenu from './SubMenu'
-import { Skeleton } from '@material-ui/lab'
+import { Alert, Skeleton } from '@material-ui/lab'
 import CampoFecha from './Templates/CampoFecha'
-import { useFormik } from 'formik';
+import { useFormik } from 'formik'
 import * as yup from 'yup'
 
 const Menu = () => {
     const cookies = new Cookies()
+    const location = useLocation()
     const history = useHistory()
     const [cabecera, setCabecera] = useState([])
+    const [msg, setMsg] = useState('')
+    const [openSnack, setOpenSnack] = useState(false)
     const [open, setOpen] = useState([])
 
     const handleRedirect = () => {
         history.push('/pedidos')
+    }
+
+    const handleClose = (event, reason) => {
+        if (reason === 'clickaway') {
+            return
+        }
+        setOpenSnack(false)
     }
 
     const formik = useFormik({
@@ -33,6 +55,7 @@ const Menu = () => {
             end: yup.date().required('Ingrese fecha hasta')
         }),
         onSubmit: (values) => {
+            setOpen(true)
             fetch('/api/pedidos_historial', {
                 method: 'POST',
                 headers: {
@@ -44,21 +67,31 @@ const Menu = () => {
                     start: values.start.toUTCString(),
                     end: values.end.toUTCString(),
                 })
-            }).then(
-                response => { return response.json() }
-            ).then(
-                data => {
-                    setCabecera(data.resultado)
+            }).then(response => {
+                setOpen(false)
+                if (response.ok) {
+                    return response.json()
                 }
-            ).then(
-                e => {
-                    setOpen(false)
+
+                throw response
+            }
+            ).then(data => {
+                setCabecera(data.resultado)
+            }).catch(error => {
+                if (error.status === 400) {
+                    setCabecera([])
                 }
-            )
+            })
         }
     })
 
     useEffect(() => {
+        if (location.state) {
+            if (location.state.snackbar) {
+                setOpenSnack(true)
+                setMsg(location.state.snackbar)
+            }
+        }
         fetch('/api/pedidos_historial', {
             method: 'POST',
             headers: {
@@ -68,17 +101,20 @@ const Menu = () => {
             body: JSON.stringify({
                 id_usuario: cookies.get('usuario').usuario.id
             })
-        }).then(
-            response => { return response.json() }
-        ).then(
-            data => {
-                setCabecera(data.resultado)
+        }).then(response => {
+            if (response.ok) {
+                if (response.status === 200) {
+                    console.log('resultados')
+                    return response.json()
+                }
             }
-        ).then(
-            e => {
-                setOpen(false)
-            }
-        )
+
+            throw response
+        }
+        ).then(data => {
+            setCabecera(data.resultado)
+            setOpen(false)
+        }).catch(error => console.log(error))
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
@@ -146,36 +182,69 @@ const Menu = () => {
                                     <TableCell />
                                     <TableCell>Fecha</TableCell>
                                     <TableCell>Nombre</TableCell>
-                                    <TableCell align="right">Precio Total</TableCell>
-                                    <TableCell align="right">Tipo de tarifa</TableCell>
+                                    <TableCell align="right">
+                                        Precio Total
+                                    </TableCell>
+                                    <TableCell align="right">
+                                        Tipo de tarifa
+                                    </TableCell>
                                     <TableCell align="right">Estado</TableCell>
                                 </TableRow>
                             </TableHead>
-                            <TableBody>
-                                {open ?
+                            <TableBody>{
+                                open ?
                                     <TableRow>
                                         <TableCell />
-                                        <TableCell><Skeleton animation="wave"/></TableCell>
-                                        <TableCell><Skeleton animation="wave"/></TableCell>
-                                        <TableCell align="right"><Skeleton animation="wave"/></TableCell>
-                                        <TableCell align="right"><Skeleton animation="wave"/></TableCell>
-                                        <TableCell align="right"><Skeleton animation="wave"/></TableCell>
-                                    </TableRow> : cabecera.map(res => {
-                                    return (
-                                        <LineaHistorial
-                                            key={res.id}
-                                            cabecera={res}
-                                            loaded={open}
-                                        />
-                                    )
-                                }
-                                )}
-                            </TableBody>
+                                        <TableCell>
+                                            <Skeleton animation="wave"/>
+                                        </TableCell>
+                                        <TableCell>
+                                            <Skeleton animation="wave"/>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Skeleton animation="wave"/>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Skeleton animation="wave"/>
+                                        </TableCell>
+                                        <TableCell align="right">
+                                            <Skeleton animation="wave"/>
+                                        </TableCell>
+                                    </TableRow> :
+                                        cabecera.length === 0 ?
+                                            <TableRow>
+                                                <TableCell
+                                                    colSpan={6}
+                                                    align="center"
+                                                >
+                                                    <Typography variant="h6">
+                                                        No existen registros
+                                                    </Typography>
+                                                </TableCell>
+                                            </TableRow> :
+                                            cabecera.map(res => {
+                                                return (
+                                                    <LineaHistorial
+                                                        key={res.id}
+                                                        cabecera={res}
+                                                        loaded={open}
+                                                    />
+                                                )
+                                            })
+                            }</TableBody>
                         </Table>
                     </TableContainer>
                 </Grid>
             </Grid>
         </Container>
+        <Snackbar
+            open={openSnack}
+            autoHideDuration={6000}
+            onClose={handleClose}
+            anchorOrigin={{vertical:'top', horizontal:'center'}}
+        >
+            <Alert onClose={handleClose} severity="success">{msg}</Alert>
+        </Snackbar>
     </>)
 }
 export default Menu

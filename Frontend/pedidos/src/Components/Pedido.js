@@ -27,12 +27,12 @@ import Autocompletado from './Templates/Autocompletado'
 import LineaPedido from './LineasPedido'
 import Cookies from 'universal-cookie'
 import * as yup from 'yup'
-import NumberFormat from "react-number-format"
 import CheckIcon from '@material-ui/icons/Check'
 import NavBar from './AppBar'
 import SubMenu from './SubMenu'
 import { useHistory } from 'react-router'
 import { Alert, Skeleton } from '@material-ui/lab'
+import NumForm from './NumForm'
 
 const Pedido = (props) => {
     const history = useHistory()
@@ -91,12 +91,17 @@ const Pedido = (props) => {
             }).then(response => {
                 if (response.ok) {
                     setValido(false)
-                    setMessage(true)
                     resetForm()
-                    history.push('/')
+                    history.push({
+                        pathname: '/index',
+                        state: {
+                            snackbar: 'Pedido enviado con éxito!'
+                        }
+                    })
+                } else {
+                    setMessage('Ha ocurrido un error al intentar enviar el pedido')
                 }
-            }
-            )
+            })
         },
         validationSchema: yup.object({
             // tarifa: yup.string().required("Este campo es obligatorio"),
@@ -358,21 +363,13 @@ const Pedido = (props) => {
                 <Toolbar>
                     <Typography style={{flexGrow: 1}} variant="button">Total:</Typography>
                     <Typography variant="h6">
-                        $ <NumberFormat
-                            value={precioTotal}
-                            displayType="text"
-                            thousandSeparator="."
-                            decimalSeparator=","
-                            fixedDecimalScale={true}
-                            decimalScale={2}/>
+                        $ <NumForm>{precioTotal}</NumForm>
                     </Typography>
                 </Toolbar>
             </AppBar>
         </Box>
         <Snackbar open={message} autoHideDuration={6000} onClose={handleClose} anchorOrigin={{vertical:'top', horizontal:'center'}}>
-            <Alert onClose={handleClose} severity="success">
-                Tu formulario ha sido enviado!
-            </Alert>
+            <Alert onClose={handleClose} severity="error">{message}</Alert>
         </Snackbar>
     </>)
 }

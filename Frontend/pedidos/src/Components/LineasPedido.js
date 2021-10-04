@@ -1,15 +1,21 @@
 import { IconButton, TableCell, TableRow } from '@material-ui/core'
 import React from 'react'
-import DeleteIcon from '@material-ui/icons/Delete';
-import NumberFormat from "react-number-format";
+import DeleteIcon from '@material-ui/icons/Delete'
+import NumForm from './NumForm'
 
 const LineaPedido = (props) => {
     return (<>
         <TableRow key={props.key}>
             <TableCell>{props.item.producto}</TableCell>
-            <TableCell align="right"><NumberFormat value={props.item.cantidad} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
-            <TableCell align="right"><NumberFormat value={props.item.price} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
-            <TableCell align="right"><NumberFormat value={props.item.total_price} displayType="text" thousandSeparator="." decimalSeparator="," fixedDecimalScale={true} decimalScale={2}/></TableCell>
+            <TableCell align="right">
+                <NumForm>{props.item.cantidad}</NumForm>
+            </TableCell>
+            <TableCell align="right">
+                <NumForm>{props.item.price}</NumForm>
+            </TableCell>
+            <TableCell align="right">
+                <NumForm>{props.item.total_price}</NumForm>
+            </TableCell>
             <TableCell align="right">
                 <IconButton  onClick={props.handleDelete} key={props.key}>
                     <DeleteIcon/>

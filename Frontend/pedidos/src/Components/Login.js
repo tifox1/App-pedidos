@@ -9,7 +9,7 @@ import FormControl from '@material-ui/core/FormControl';
 import Button from '@material-ui/core/Button';
 import TextField from '@material-ui/core/TextField';
 import Caja from './Templates/Caja';
-import { FormHelperText, Snackbar } from '@material-ui/core';
+import { Container, FormHelperText, Snackbar } from '@material-ui/core';
 import { Collapse } from '@material-ui/core';
 import MuiAlert from '@material-ui/lab/Alert'
 import Backdrop from '@material-ui/core/Backdrop';
@@ -100,55 +100,57 @@ const Login = () => {
                 {message}
             </MuiAlert>
         </Snackbar>
-        <form onSubmit={formik.handleSubmit}>
-            <Grid container component={Box} padding={1}>
-                <Caja title="Iniciar sesión">
-                    <Grid
-                        container
-                        component={FormControl}
-                        spacing={2}>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                name="usuario"
-                                variant="outlined"
-                                label="Usuario"
-                                error={logged && formik.errors.usuario}
-                                fullWidth
-                                onChange={formik.handleChange}
-                            />
-                            <Collapse in={logged && formik.errors.usuario}>
-                                <FormHelperText error>{formik.errors.usuario}</FormHelperText>
-                            </Collapse>
+        <Container maxWidth="xl">
+            <form onSubmit={formik.handleSubmit}>
+                <Grid container component={Box} padding={1}>
+                    <Caja title="Iniciar sesión">
+                        <Grid
+                            container
+                            component={FormControl}
+                            spacing={2}>
+                            <Grid item xs={12} md={6}>
+                                <TextField
+                                    name="usuario"
+                                    variant="outlined"
+                                    label="Usuario"
+                                    error={logged && formik.errors.usuario}
+                                    fullWidth
+                                    onChange={formik.handleChange}
+                                />
+                                <Collapse in={logged && formik.errors.usuario}>
+                                    <FormHelperText error>{formik.errors.usuario}</FormHelperText>
+                                </Collapse>
+                            </Grid>
+                            <Grid item xs={12} md={6}>
+                                <TextField
+                                    name="contrasenia"
+                                    variant="outlined"
+                                    label="Contraseña"
+                                    type="password"
+                                    error={logged && formik.errors.contrasenia}
+                                    fullWidth
+                                    onChange={formik.handleChange}
+                                />
+                                <Collapse in={logged && formik.errors.contrasenia}>
+                                    <FormHelperText error>{formik.errors.contrasenia}</FormHelperText>
+                                </Collapse>
+                            </Grid>
+                            <Grid item
+                                alignItems="center"
+                                justify="center"
+                                xs={12}>
+                                    <Button variant="contained"
+                                            type="submit"
+                                            color="primary"
+                                            onClick={() => {setLogged(true)}}>
+                                        Acceder
+                                    </Button>
+                            </Grid>
                         </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                name="contrasenia"
-                                variant="outlined"
-                                label="Contraseña"
-                                type="password"
-                                error={logged && formik.errors.contrasenia}
-                                fullWidth
-                                onChange={formik.handleChange}
-                            />
-                            <Collapse in={logged && formik.errors.contrasenia}>
-                                <FormHelperText error>{formik.errors.contrasenia}</FormHelperText>
-                            </Collapse>
-                        </Grid>
-                        <Grid item
-                            alignItems="center"
-                            justify="center"
-                            xs={12}>
-                                <Button variant="contained"
-                                        type="submit"
-                                        color="primary"
-                                        onClick={() => {setLogged(true)}}>
-                                    Acceder
-                                </Button>
-                        </Grid>
-                    </Grid>
-                </Caja>
-            </Grid>
-        </form>
+                    </Caja>
+                </Grid>
+            </form>
+        </Container>
     </>)
 }
 export default Login
