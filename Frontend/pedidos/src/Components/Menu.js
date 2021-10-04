@@ -102,6 +102,7 @@ const Menu = () => {
                 id_usuario: cookies.get('usuario').usuario.id
             })
         }).then(response => {
+            setOpen(false)
             if (response.ok) {
                 if (response.status === 200) {
                     console.log('resultados')
@@ -113,8 +114,11 @@ const Menu = () => {
         }
         ).then(data => {
             setCabecera(data.resultado)
-            setOpen(false)
-        }).catch(error => console.log(error))
+        }).catch(error => {
+            if (error.status === 400) {
+                setCabecera([])
+            }
+        })
 
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
