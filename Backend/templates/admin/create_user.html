@@ -1,0 +1,34 @@
+{% import "bootstrap/wtf.html" as wtf %}
+{% extends 'admin/master.html' %}
+{% block body %}
+<ul class="nav nav-tabs">
+    <li>
+        <a href="/admin/user/">List</a>
+    </li>
+    <li class="active">
+        <a href="javascript:void(0)">Create</a>
+    </li>
+</ul>
+<form action="" method="POST" role="form" class="admin-form form-horizontal" enctype="multipart/form-data">
+    <div class="form-group">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-offset-1 col-md-10 submit-row">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_field(form.name) }}
+                    {{ wtf.form_field(form.password) }}
+                </div>
+            </div>
+        </div>
+    </div>
+        <hr>
+        <div class="form-group">
+        <div class="col-md-offset-1 col-md-10 submit-row">
+            <input type="submit" class="btn btn-primary" value="Save">
+            <a href="/admin/user/" class="btn btn-danger" role="button">
+                Cancel
+            </a>
+        </div>
+    </div>
+</form>
+{% endblock %}

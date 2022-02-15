@@ -1,0 +1,5 @@
+__pycache__/
+migrations/
+Backend/__pycache__/
+Backend/__pycache__/config.cpython-39.pyc
+.gitignore
